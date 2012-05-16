@@ -21,6 +21,24 @@ function VideoplazaAds(vpHost) {
 }
 
 /**
+ * Set or clear the function to call to display a companion banner
+ *
+ * The function will be passed an object with information about the banner.
+ * The most important attribute of this object is companion.resource, which
+ * contains the URI for the companion banner.
+ *
+ * This function MUST return true if the companion banner was successfully shown.
+ *
+ * If the argument to this function is not a function, the existing handler will be cleared
+ *
+ * @param {?function(object): boolean} companionHandler
+ *   Function to call when companion banners are to be displayed.
+ */
+VideoplazaAds.prototype.setCompanionHandler = function (callback) {
+  this.companionHandler = callback;
+}
+
+/**
  * Binds the given callback to the given event on the given element
  * The callback will have the same this context as the call to listen
  *
@@ -120,9 +138,11 @@ VideoplazaAds.prototype._showNextAd = function () {
  * @param {object} companion.trackingUrls
  * @param {string} companion.type Always === 'companion'
  */
-VideoplazaAds.prototype.showCompanion = function (companion) {
+VideoplazaAds.prototype._showCompanion = function (companion) {
   console.log('show companion banner', companion.resource);
-  this.tracker.track(companion, T.creative.creativeView);
+  if (typeof this.companionHandler === 'function' && this.companpanionHandler(companion)) {
+    this.tracker.track(companion, T.creative.creativeView);
+  }
 }
 
 /**
