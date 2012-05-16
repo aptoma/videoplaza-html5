@@ -1,4 +1,4 @@
-var T = videoplaza.core.Tracker.trackingEvents;
+var VPT = videoplaza.core.Tracker.trackingEvents;
 
 /**
  * Create a new VideoplazaAds integration
@@ -120,7 +120,7 @@ VideoplazaAds.prototype._showNextAd = function () {
       return true;
     case 'inventory':
       console.log('found inventory');
-      this.tracker.track(this.ad, T.ad.impression);
+      this.tracker.track(this.ad, VPT.ad.impression);
       return this._showNextAd();
     default:
       this._onError('ad format ' + this.ad.type + ' not supported');
@@ -141,7 +141,7 @@ VideoplazaAds.prototype._showNextAd = function () {
 VideoplazaAds.prototype._showCompanion = function (companion) {
   console.log('show companion banner', companion.resource);
   if (typeof this.companionHandler === 'function' && this.companpanionHandler(companion)) {
-    this.tracker.track(companion, T.creative.creativeView);
+    this.tracker.track(companion, VPT.creative.creativeView);
   }
 }
 
@@ -221,13 +221,13 @@ VideoplazaAds.prototype._destroyAdPlayer = function() {
 VideoplazaAds.prototype._onAdPlay = function() {
   if (!this.adPlaying) {
     console.log('ad started playing');
-    this.tracker.track(this.ad, T.ad.impression);
-    this.tracker.track(this.adVideo, T.creative.creativeView);
-    this.tracker.track(this.adVideo, T.creative.start);
+    this.tracker.track(this.ad, VPT.ad.impression);
+    this.tracker.track(this.adVideo, VPT.creative.creativeView);
+    this.tracker.track(this.adVideo, VPT.creative.start);
   } else {
     // resume
     console.log('ad resumed');
-    this.tracker.track(this.adVideo, T.creative.resume);
+    this.tracker.track(this.adVideo, VPT.creative.resume);
   }
 
   this.adPlaying = true;
@@ -238,7 +238,7 @@ VideoplazaAds.prototype._onAdPlay = function() {
  */
 VideoplazaAds.prototype._onAdClick = function() {
   console.log('ad click through to ' + this.adVideo.clickThroughUri);
-  this.tracker.track(this.adVideo, T.creative.clickThrough);
+  this.tracker.track(this.adVideo, VPT.creative.clickThrough);
   window.open(this.adVideo.clickThroughUri, '_blank');
 }
 
