@@ -9,18 +9,32 @@
         background: -webkit-radial-gradient(center 200px, ellipse cover, #333 0%, #111 70%);
       }
       body { font-family: sans-serif; }
-      h1 { width: 854px; margin: 80px auto 0; color: #EEE; font-size: 42px; font-weight: normal; }
-      video { border: 5px solid #333; display: block; margin: 10px auto; border-radius: 5px; }
-      video { outline: none; }
-      #companionMpu { position: fixed; bottom: 0; right: 10px; border: 5px solid #CC3300; }
+      h1 { margin: 20px auto 0; color: #EEE; font-size: 20px; font-weight: normal; }
+      video { height: 100px; width: 100%; display: block; outline: none; margin: 10px auto; }
+      #companionMpu { display: inline-block; border: 2px solid #CC3300; }
+
+      @media screen and (max-width: 863px) { video { width: 640px; height: 360px; } }
+      @media screen and (max-width: 639px) { video { width: 576px; height: 324px; } }
+      @media screen and (max-width: 575px) { video { width: 480px; height: 270px; } }
+      @media screen and (max-width: 479px) { video { width: 320px; height: 180px; } }
+      @media screen and (max-width: 319px) { video { width: 240px; height: 135px; } }
+
+      @media screen and (min-width: 864px) {
+        video { border: 5px solid #333; border-radius: 5px; }
+        video { width: 854px; height: 480px; }
+        h1 { width: 854px; margin-top: 80px; font-size: 42px; }
+        #companionMpu { position: fixed; bottom: 0; right: 10px; border-width: 5px; }
+      }
     </style>
+    <meta name="viewport" content="width=device-width">
   </head>
   <body>
     <h1>Videoplaza HTML5 integration demo</h1>
-    <video width="854" height="480" id="player" controls="true">
+    <video id="player" controls="true">
       <source src="video.ogg" type='video/ogg; codecs="theora, vorbis"' />
     </video>
-    <div id="companionMpu">
+    <div style="text-align: center;">
+      <div id="companionMpu"></div>
     </div>
     <script src="http://nelson.videoplaza.org/bridges/html5/videojs/vp-html5-sdk-2.0.12.6.1.rc.min.js"></script>
     <script src="videoplaza-html5.js"></script>
@@ -44,8 +58,9 @@
         contentPartner: "blabla_test",
         duration: 123
       });
-      vp.setVideoProperties(854, 480);
-      vp.watchPlayer(document.getElementById('player'));
+      var player = document.getElementById('player');
+      vp.setVideoProperties(player.clientWidth || player.offsetWidth, player.clientHeight || player.offsetHeight);
+      vp.watchPlayer(player);
 
     </script>
   </body>
