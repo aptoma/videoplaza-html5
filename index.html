@@ -7,7 +7,7 @@
     <video width="854" height="480" id="player" controls="true">
       <source src="video.ogg" type='video/ogg; codecs="theora, vorbis"' />
     </video>
-    <script src="http://vp-validation.cdn.videoplaza.tv/resources/html5-sdk/latest/html5-sdk.min.js"></script>
+    <script src="http://nelson.videoplaza.org/bridges/html5/videojs/vp-html5-sdk-2.0.12.6.1.rc.min.js"></script>
     <script src="videoplaza-html5.js"></script>
     <script>
 
@@ -18,8 +18,8 @@
       var vp = new VideoplazaAds('http://vp-validation.videoplaza.tv');
       vp.setCompanionHandler(companion);
       vp.setContentMeta({
-        category: "",
-        tags: [],
+        category: "validation",
+        tags: ["standard"],
         flags: [],
         contentForm: "shortForm",
         contentId: "1234",

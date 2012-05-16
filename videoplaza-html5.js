@@ -140,7 +140,7 @@ VideoplazaAds.prototype._showNextAd = function () {
  */
 VideoplazaAds.prototype._showCompanion = function (companion) {
   console.log('show companion banner', companion.resource);
-  if (typeof this.companionHandler === 'function' && this.companpanionHandler(companion)) {
+  if (typeof this.companionHandler === 'function' && this.companionHandler(companion)) {
     this.tracker.track(companion, VPT.creative.creativeView);
   }
 }
@@ -163,7 +163,7 @@ VideoplazaAds.prototype._displayAdCreatives = function (creatives) {
       this.videoAd = creatives[i];
     } else if (creatives[i].type === 'companion') {
       console.log('found companion creative', creatives[i]);
-      this.showCompanion(creatives[i]);
+      this._showCompanion(creatives[i]);
     }
   }
 
@@ -279,7 +279,7 @@ VideoplazaAds.prototype._playVideoAd = function () {
   console.log('playing ad', this.videoAd);
   this._createAdPlayer();
   this.adPlayer.setAttribute('src', this.videoAd.mediaFiles[0].uri);
-  this.adPlayer.load();
+  this.adPlayer.play();
 }
 
 /**
