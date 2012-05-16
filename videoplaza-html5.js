@@ -291,6 +291,7 @@ VideoplazaAds.prototype._createAdPlayer = function() {
     this.adPlayer.setAttribute('width', this.watchedPlayer.clientWidth || this.watchedPlayer.offsetWidth);
     this.adPlayer.setAttribute('height', this.watchedPlayer.clientHeight || this.watchedPlayer.offsetHeight);
     this.adPlayer.setAttribute('controls', false);
+    this.adPlayer.setAttribute('preload', true);
     this._listen(this.adPlayer, 'play', this._onAdPlay);
     this._listen(this.adPlayer, 'click', this._onAdClick);
     this._listen(this.adPlayer, 'canplay', this._onAdCanPlay);
