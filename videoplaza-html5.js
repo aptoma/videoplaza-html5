@@ -176,13 +176,13 @@ VideoplazaAds.prototype._showCompanion = function (companion) {
  * @param {object[]} creatives List of creatives to display
  */
 VideoplazaAds.prototype._displayAdCreatives = function (creatives) {
-  this.videoAd = null;
+  this.adVideo = null;
 
   console.log('found ' + creatives.length + ' creatives for ad');
   for (var i = 0, l = creatives.length; i < l; i++) {
     if (creatives[i].id === 'video') {
       console.log('found video creative', creatives[i]);
-      this.videoAd = creatives[i];
+      this.adVideo = creatives[i];
     } else if (creatives[i].type === 'companion') {
       console.log('found companion creative', creatives[i]);
       if (!this._showCompanion(creatives[i])) {
@@ -191,7 +191,7 @@ VideoplazaAds.prototype._displayAdCreatives = function (creatives) {
     }
   }
 
-  if (!this.videoAd) {
+  if (!this.adVideo) {
     console.error("Videoplaza error: bad ad - no video", this.ad);
     this._showNextAd();
     return;
@@ -268,11 +268,14 @@ VideoplazaAds.prototype._onAdPlay = function() {
 
 /**
  * Ad click handler
+ *
+ * @param {Event} e Click event
  */
-VideoplazaAds.prototype._onAdClick = function() {
+VideoplazaAds.prototype._onAdClick = function (e) {
   console.log('ad click through to ' + this.adVideo.clickThroughUri);
   this.tracker.track(this.adVideo, VPT.creative.clickThrough);
   window.open(this.adVideo.clickThroughUri, '_blank');
+  e.preventDefault();
 }
 
 /**
@@ -309,9 +312,9 @@ VideoplazaAds.prototype._createAdPlayer = function() {
  * Play the current video ad
  */
 VideoplazaAds.prototype._playVideoAd = function () {
-  console.log('playing ad', this.videoAd);
+  console.log('playing ad', this.adVideo);
   this._createAdPlayer();
-  this.adPlayer.setAttribute('src', this.videoAd.mediaFiles[0].uri);
+  this.adPlayer.setAttribute('src', this.adVideo.mediaFiles[0].uri);
   this.adPlayer.play();
 }
 
