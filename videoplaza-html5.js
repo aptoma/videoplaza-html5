@@ -60,7 +60,7 @@ VideoplazaAds.prototype._showNextAd = function () {
     case 'inventory':
       console.log('found inventory');
       this.tracker.track(this.ad, T.ad.impression);
-      this._resumeWatchedPlayer();
+      this._showNextAd();
       break;
     default:
       this._onError('ad format ' + this.ad.type + ' not supported');
