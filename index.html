@@ -2,8 +2,21 @@
 <html>
   <head>
     <title>VideoPlaza HTML5 video ads</title>
+    <style>
+      html {
+        height: 100%;
+        background: #111;
+        background: -webkit-radial-gradient(center 200px, ellipse cover, #333 0%, #111 70%);
+      }
+      body { font-family: sans-serif; }
+      h1 { width: 854px; margin: 80px auto 0; color: #EEE; font-size: 42px; font-weight: normal; }
+      video { border: 5px solid #333; display: block; margin: 10px auto; border-radius: 5px; }
+      video { outline: none; }
+      #companionMpu { position: fixed; bottom: 0; right: 10px; border: 5px solid #CC3300; }
+    </style>
   </head>
   <body>
+    <h1>Videoplaza HTML5 integration demo</h1>
     <video width="854" height="480" id="player" controls="true">
       <source src="video.ogg" type='video/ogg; codecs="theora, vorbis"' />
     </video>
