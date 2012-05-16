@@ -386,6 +386,11 @@ VideoplazaAds.prototype.watchPlayer = function(videoElement) {
 
   this.watchedPlayer = videoElement;
 
+  if (!this.watchedPlayer.paused) {
+    this._runAds('onBeforeContent');
+    this.shownPreroll = true;
+  }
+
   this._listen(videoElement, 'play', function() {
     if (!this.shownPreroll) {
       this._runAds('onBeforeContent');
