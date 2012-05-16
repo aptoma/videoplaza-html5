@@ -26,7 +26,8 @@ function VideoplazaAds(vpHost) {
 /**
  * Set or clear the function to call to display a companion banner
  *
- * The function will be passed the HTML of the companion banner (usually an iframe)
+ * The function will be passed the HTML of the companion banner (usually an iframe).
+ * It will also receive the companion ad's zone ID, its width and its height.
  * This function MUST return true if the companion banner was successfully shown.
  *
  * If the argument to this function is not a function, the existing handler will be cleared
@@ -159,10 +160,9 @@ VideoplazaAds.prototype._showCompanion = function (companion) {
     'height="' + companion.height + '" '+
     'src="' + companion.resource + '"></iframe>';
 
-  if (typeof this.companionHandler === 'function' && this.companionHandler(cb)) {
-    this.tracker.track(companion, VPT.creative.creativeView);
-    return true;
-  }
+  return typeof this.companionHandler === 'function' &&
+         this.companionHandler(cb, companion.zoneId, companion.width, companion.height) &&
+         (this.tracker.track(companion, VPT.creative.creativeView) || true)
 
   return false;
 }

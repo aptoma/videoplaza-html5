@@ -13,7 +13,8 @@
     <script src="videoplaza-html5.js"></script>
     <script>
 
-      var companion = function(cb) {
+      var companion = function(cb, zone, width, height) {
+        console.log('got companion banner for zone ' + zone + ' with dimensions ' + width + 'x' + height);
         document.getElementById('companion').innerHTML = cb;
         return true;
       }
