@@ -12,9 +12,12 @@ function VideoplazaAds(vpHost) {
     width: null,
     height: null,
     bitrate: null,
-    insertionPointType: null
+    insertionPointType: null,
+    playbackPosition: null
   };
   this.adPlaying = false;
+  this.midrolls = [];
+  this.lastPlayedMidroll = null;
 
   this.adCall = new videoplaza.core.AdCallModule(vpHost);
   this.tracker = new videoplaza.core.Tracker();
@@ -36,6 +39,19 @@ function VideoplazaAds(vpHost) {
  */
 VideoplazaAds.prototype.setCompanionHandler = function (callback) {
   this.companionHandler = callback;
+}
+
+/**
+ * Set where midrolls should occur
+ *
+ * @param {Number[]} midrolls Timecodes (in seconds) for when midrolls should be triggered
+ */
+VideoplazaAds.prototype.setMidrolls = function (midrolls) {
+  if (typeof midrolls === typeof []) {
+    midrolls = midrolls.sort(function(a, b) { return a - b; });
+  }
+  this.midrolls = midrolls;
+  this.lastPlayedMidroll = null;
 }
 
 /**
@@ -192,10 +208,19 @@ VideoplazaAds.prototype._onError = function (message) {
  * Fetches and displays ads
  *
  * @param {string} insertionPoint The type of ad to fetch
+ * @param {boolean} [includePosition] Whether to send the current video position
  *  May be one of: onBeforeContent, playbackPosition, onContentEnd, playbackTime, onSeek
  */
-VideoplazaAds.prototype._runAds = function (insertionPoint) {
+VideoplazaAds.prototype._runAds = function (insertionPoint, includePosition) {
+  this.watchedPlayer.pause();
   this.requestSettings.insertionPointType = insertionPoint;
+
+  if (includePosition) {
+    this.requestSettings.playbackPosition = this.watchedPlayer.currentTime;
+  } else {
+    this.requestSettings.playbackPosition = null;
+  }
+
   var _this = this;
   var a = function(message) { _this._onAds.call(_this, message); };
   var e = function(message) { _this._onError.call(_this, message); };
@@ -294,6 +319,24 @@ VideoplazaAds.prototype._resumeWatchedPlayer = function() {
 }
 
 /**
+ * Shows a midroll if a midroll should be played
+ */
+VideoplazaAds.prototype._checkForMidroll = function () {
+  var position = this.watchedPlayer.startTime + this.watchedPlayer.currentTime;
+  var potentialMidroll = null;
+  for (var i = 0, l = this.midrolls.length; i < l; i++) {
+    if (this.midrolls[i] > position) { break; }
+    potentialMidroll = i;
+  }
+
+  if (potentialMidroll !== null && potentialMidroll !== this.lastPlayedMidroll) {
+    console.log('playing overdue midroll ' + potentialMidroll);
+    this.lastPlayedMidroll = potentialMidroll;
+    this._runAds('playbackPosition', true)
+  }
+}
+
+/**
  * Watch the given player, and inject ads when appropriate
  *
  * Will add two event listeners, one for play and one for ended.
@@ -321,11 +364,12 @@ VideoplazaAds.prototype.watchPlayer = function(videoElement) {
 
   this._listen(videoElement, 'play', function() {
     if (!this.shownPreroll) {
-      videoElement.pause();
       this._runAds('onBeforeContent');
       this.shownPreroll = true;
     }
   });
+
+  this._listen(videoElement, 'timeupdate', this._checkForMidroll);
 
   this._listen(videoElement, 'ended', function() {
     if (!this.shownPostroll) {
