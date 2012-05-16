@@ -293,6 +293,7 @@ VideoplazaAds.prototype._createAdPlayer = function() {
     this.adPlayer.setAttribute('controls', false);
     this._listen(this.adPlayer, 'play', this._onAdPlay);
     this._listen(this.adPlayer, 'click', this._onAdClick);
+    this._listen(this.adPlayer, 'canplay', this._onAdCanPlay);
     this._listen(this.adPlayer, 'ended', this._showNextAd);
     this.adPlayer.style.display = 'none';
     this.watchedPlayer.parentNode.insertBefore(this.adPlayer, this.watchedPlayer);
@@ -315,6 +316,13 @@ VideoplazaAds.prototype._playVideoAd = function () {
   console.log('playing ad', this.adVideo);
   this._createAdPlayer();
   this.adPlayer.setAttribute('src', this.adVideo.mediaFiles[0].uri);
+  this.adPlayer.load();
+}
+
+/**
+ * Called when the ad has loaded and can be played
+ */
+VideoplazaAds.prototype._onAdCanPlay = function () {
   this.adPlayer.play();
 }
 
