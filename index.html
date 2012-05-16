@@ -7,7 +7,7 @@
     <video width="854" height="480" id="player" controls="true">
       <source src="video.ogg" type='video/ogg; codecs="theora, vorbis"' />
     </video>
-    <div id="companion">
+    <div id="companionMpu">
     </div>
     <script src="http://nelson.videoplaza.org/bridges/html5/videojs/vp-html5-sdk-2.0.12.6.1.rc.min.js"></script>
     <script src="videoplaza-html5.js"></script>
@@ -15,7 +15,7 @@
 
       var companion = function(cb, zone, width, height) {
         console.log('got companion banner for zone ' + zone + ' with dimensions ' + width + 'x' + height);
-        document.getElementById('companion').innerHTML = cb;
+        document.getElementById(zone).innerHTML = cb;
         return true;
       }
 
