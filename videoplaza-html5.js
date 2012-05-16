@@ -200,7 +200,7 @@ VideoplazaAds.prototype.watchPlayer = function(videoElement) {
 
   this.listen(videoElement, 'ended', function() {
     if (!this.shownPostroll) {
-      this.showAds('onContentEnd');
+      this.runAds('onContentEnd');
       this.shownPostroll = true;
     }
   });
