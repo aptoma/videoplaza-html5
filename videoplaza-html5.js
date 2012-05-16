@@ -26,10 +26,7 @@ function VideoplazaAds(vpHost) {
 /**
  * Set or clear the function to call to display a companion banner
  *
- * The function will be passed an object with information about the banner.
- * The most important attribute of this object is companion.resource, which
- * contains the URI for the companion banner.
- *
+ * The function will be passed the HTML of the companion banner (usually an iframe)
  * This function MUST return true if the companion banner was successfully shown.
  *
  * If the argument to this function is not a function, the existing handler will be cleared
@@ -153,12 +150,21 @@ VideoplazaAds.prototype._showNextAd = function () {
  * @param {string} companion.resourceType Companion type
  * @param {object} companion.trackingUrls
  * @param {string} companion.type Always === 'companion'
+ * @return {boolean} Whether the companion banner was successfully shown
  */
 VideoplazaAds.prototype._showCompanion = function (companion) {
-  console.log('show companion banner', companion.resource);
-  if (typeof this.companionHandler === 'function' && this.companionHandler(companion)) {
+  console.log('show companion banner', companion);
+  var cb = '<iframe scrolling="no" frameborder="0" '+
+    'width="' + companion.width + '" '+
+    'height="' + companion.height + '" '+
+    'src="' + companion.resource + '"></iframe>';
+
+  if (typeof this.companionHandler === 'function' && this.companionHandler(cb)) {
     this.tracker.track(companion, VPT.creative.creativeView);
+    return true;
   }
+
+  return false;
 }
 
 /**
@@ -179,7 +185,9 @@ VideoplazaAds.prototype._displayAdCreatives = function (creatives) {
       this.videoAd = creatives[i];
     } else if (creatives[i].type === 'companion') {
       console.log('found companion creative', creatives[i]);
-      this._showCompanion(creatives[i]);
+      if (!this._showCompanion(creatives[i])) {
+        console.error("Videoplaza error: no way of displaying companion ad");
+      }
     }
   }
 
@@ -320,6 +328,11 @@ VideoplazaAds.prototype._resumeWatchedPlayer = function() {
 
 /**
  * Shows a midroll if a midroll should be played
+ *
+ * This is determined by looking through the list of midrolls (which is sorted),
+ * and finding the latest timestamp which has been passed.
+ * If the last midroll shown was not the one we last passed, then we
+ * show that one.
  */
 VideoplazaAds.prototype._checkForMidroll = function () {
   var position = this.watchedPlayer.startTime + this.watchedPlayer.currentTime;
