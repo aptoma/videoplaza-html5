@@ -10,7 +10,7 @@ function VideoplazaAds(vpHost) {
   };
   this.adPlaying = false;
 
-  this.ads = new videoplaza.core.AdCallModule(vpHost);
+  this.adCall = new videoplaza.core.AdCallModule(vpHost);
   this.tracker = new videoplaza.core.Tracker();
 }
 
@@ -105,7 +105,7 @@ VideoplazaAds.prototype.runAds = function (insertionPoint) {
   var _this = this;
   var a = function(message) { _this._onAds.call(_this, message); };
   var e = function(message) { _this._onError.call(_this, message); };
-  this.ads.requestAds(this.contentMeta, this.requestSettings, a, e);
+  this.adCall.requestAds(this.contentMeta, this.requestSettings, a, e);
 }
 
 VideoplazaAds.prototype._destroyAdPlayer = function() {
