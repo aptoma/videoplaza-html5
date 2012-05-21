@@ -427,6 +427,7 @@ VideoplazaAds.prototype.watchPlayer = function(videoElement) {
 
   this.watchedPlayer = videoElement;
 
+  this.shownPreroll = false;
   if (!this.watchedPlayer.paused) {
     this._runAds('onBeforeContent');
     this.shownPreroll = true;
@@ -441,6 +442,7 @@ VideoplazaAds.prototype.watchPlayer = function(videoElement) {
 
   this._listen(videoElement, 'timeupdate', this._checkForMidroll);
 
+  this.shownPostroll = false;
   this._listen(videoElement, 'ended', function() {
     if (!this.shownPostroll) {
       this._runAds('onContentEnd');
