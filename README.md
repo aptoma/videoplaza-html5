@@ -1,3 +1,4 @@
+# What is this? #
 Videoplaza is a provider of ads for video, and have recently (as of May
 2012) released a major rewrite of their HTML5 video solution.
 
@@ -6,6 +7,16 @@ integration substantially easier. It will take care of all forms of
 tracking, displaying prerolls, midrolls and postrolls, as well as
 companion banners in a flexible and standards compliant way.
 
+# Do you have an example? #
+
+Yes, just open index.html.
+
+Note that you should download video.ogg or video.mp4 (or both) yourself,
+since video files aren't really good to put in a repo. [Big Buck
+Bunny](http://www.bigbuckbunny.org/index.php/download/) works well and
+is easily available.
+
+# How do I use it? #
 To use the library, include it in your page after the Videoplaza HTML5
 SDK, and create a new VideoplazaAds object with the vpHost given to you
 by Videoplaza. You may also add a truthy second parameter to enable
@@ -35,6 +46,9 @@ is taken into account).
 Also, remember to call setContentMeta before each new video is to be
 displayed to set the correct data to send to the Videoplaza backend.
 
+**All of this should be very apparent by looking at index.html**
+
+## Note on events ##
 Note that this implementation depends on being able to listen for the
 *play* and *ended* events. It should therefore be allowed to be the first
 to attach its event listeners to a newly created video element. It does
@@ -45,3 +59,8 @@ real video starts playing without this *ignore* property. The same
 applies to the postroll. This *ignore* property is a workaround for the
 lack of event cancellation in the DOM Event spec. Other suggestions are
 welcome!
+
+# Support #
+The code presented here is not officially supported by Videoplaza, nor
+by Aptoma AS. That said, it should be working well and should be safe to
+use.
