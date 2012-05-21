@@ -35,5 +35,13 @@ is taken into account).
 Also, remember to call setContentMeta before each new video is to be
 displayed to set the correct data to send to the Videoplaza backend.
 
-Note that this implementation DOES hijack the *play* and *ended* events,
-so these might not be reliable.
+Note that this implementation depends on being able to listen for the
+*play* and *ended* events. It should therefore be allowed to be the first
+to attach its event listeners to a newly created video element. It does
+play quite nicely with others though. If an ad is displayed, the play
+event is intercepted, and a *ignore* property is set to true, the ad is
+played, and a new play event is triggered when the ads finish and the
+real video starts playing without this *ignore* property. The same
+applies to the postroll. This *ignore* property is a workaround for the
+lack of event cancellation in the DOM Event spec. Other suggestions are
+welcome!

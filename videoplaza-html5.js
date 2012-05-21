@@ -3,8 +3,8 @@ var VPT = videoplaza.core.Tracker.trackingEvents;
 /**
  * Create a new VideoplazaAds integration
  *
+ * @class
  * @param {string} vpHost Videoplaza Host URL
- * @constructor
  */
 function VideoplazaAds(vpHost, debug) {
   this.vpHost = vpHost;
@@ -376,6 +376,35 @@ VideoplazaAds.prototype._resumeWatchedPlayer = function() {
   if (this.watchedPlayer && this.watchedPlayer.paused && !this.watchedPlayer.ended) {
     this.watchedPlayer.play();
   }
+
+  if (this.watchedPlayer.ended) {
+    this._triggerVideoEvent('ended');
+  }
+}
+
+/**
+ * Trigger an event with the given type on the currently watched player
+ *
+ * @see http://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+ * @param {string} eType Event type to trigger
+ */
+VideoplazaAds.prototype._triggerVideoEvent = function(eType) {
+  if (!this.watchedPlayer) { return; }
+
+  var event;
+  if (document.createEvent) {
+    event = document.createEvent("HTMLEvents");
+    event.initEvent(eType, true, true);
+  } else {
+    event = document.createEventObject();
+    event.eventType = eType;
+  }
+
+  if (document.createEvent) {
+    this.watchedPlayer.dispatchEvent(event);
+  } else {
+    this.watchedPlayer.fireEvent("on" + event.eventType, event);
+  }
 }
 
 /**
@@ -433,20 +462,22 @@ VideoplazaAds.prototype.watchPlayer = function(videoElement) {
     this.shownPreroll = true;
   }
 
-  this._listen(videoElement, 'play', function() {
+  this._listen(videoElement, 'play', function(e) {
     if (!this.shownPreroll) {
       this._runAds('onBeforeContent');
       this.shownPreroll = true;
+      e.ignore = true;
     }
   });
 
   this._listen(videoElement, 'timeupdate', this._checkForMidroll);
 
   this.shownPostroll = false;
-  this._listen(videoElement, 'ended', function() {
+  this._listen(videoElement, 'ended', function(e) {
     if (!this.shownPostroll) {
       this._runAds('onContentEnd');
       this.shownPostroll = true;
+      e.ignore = true;
     }
   });
 
