@@ -16,11 +16,21 @@ function VideoplazaAds(vpHost) {
     playbackPosition: null
   };
   this.adPlaying = false;
+  this.adsEnabled = true;
   this.midrolls = [];
   this.lastPlayedMidroll = null;
 
   this.adCall = new videoplaza.core.AdCallModule(vpHost);
   this.tracker = new videoplaza.core.Tracker();
+}
+
+/**
+ * Set whether ads are enabled
+ *
+ * @param {boolean} enabled Whether to enabled ads or not
+ */
+VideoplazaAds.prototype.setAdsEnabled = function (enabled) {
+  this.adsEnabled = enabled;
 }
 
 /**
@@ -118,7 +128,7 @@ VideoplazaAds.prototype._onAds = function (ads) {
  */
 VideoplazaAds.prototype._showNextAd = function () {
   this.adIndex++;
-  if (this.adIndex >= this.ads.length) {
+  if (!this.adsEnabled || this.adIndex >= this.ads.length) {
     console.log('no more ads');
     this._resumeWatchedPlayer();
     return false;
