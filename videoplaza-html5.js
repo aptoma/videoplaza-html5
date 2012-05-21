@@ -288,6 +288,27 @@ VideoplazaAds.prototype._onAdClick = function (e) {
   e.preventDefault();
 }
 
+VideoplazaAds.prototype._onAdTick = function (e) {
+  var percent = this.adPlayer.currentTime / this.adVideo.duration;
+  if (this.unsentQuartiles.length && percent > this.unsentQuartiles[0]) {
+    var q = this.unsentQuartiles.shift();
+    switch (q) {
+      case 0.25:
+        console.log('logged first quartile');
+        this.tracker.track(this.adVideo, VPT.creative.firstQuartile);
+        break;
+      case 0.5:
+        console.log('logged midpoint');
+        this.tracker.track(this.adVideo, VPT.creative.midpoint);
+        break;
+      case 0.75:
+        console.log('logged third quartile');
+        this.tracker.track(this.adVideo, VPT.creative.thirdQuartile);
+        break;
+    }
+  }
+}
+
 /**
  * Create the ad player element (unless it already exists)
  *
@@ -305,6 +326,7 @@ VideoplazaAds.prototype._createAdPlayer = function() {
     this._listen(this.adPlayer, 'play', this._onAdPlay);
     this._listen(this.adPlayer, 'click', this._onAdClick);
     this._listen(this.adPlayer, 'canplay', this._onAdCanPlay);
+    this._listen(this.adPlayer, 'timeupdate', this._onAdTick);
     this._listen(this.adPlayer, 'ended', this._showNextAd);
     this.adPlayer.style.display = 'none';
     this.watchedPlayer.parentNode.insertBefore(this.adPlayer, this.watchedPlayer);
@@ -325,6 +347,7 @@ VideoplazaAds.prototype._createAdPlayer = function() {
  */
 VideoplazaAds.prototype._playVideoAd = function () {
   console.log('playing ad', this.adVideo);
+  this.unsentQuartiles = [0.25,0.5,0.75];
   this._createAdPlayer();
   this.adPlayer.setAttribute('src', this.adVideo.mediaFiles[0].uri);
   this.adPlayer.load();
