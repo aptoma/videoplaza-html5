@@ -48,7 +48,7 @@ displayed to set the correct data to send to the Videoplaza backend.
 
 **All of this should be very apparent by looking at index.html**
 
-## Note on events ##
+### A note on events ###
 Note that this implementation depends on being able to listen for the
 *play* and *ended* events. It should therefore be allowed to be the first
 to attach its event listeners to a newly created video element. It does
