@@ -71,8 +71,10 @@
       vp.setVideoProperties(player.clientWidth || player.offsetWidth, player.clientHeight || player.offsetHeight);
       vp.watchPlayer(player);
 
-      player.addEventListener('play', function(e) { if (!e.ignore) { alert('got play'); } }, false);
-      player.addEventListener('ended', function(e) { if (!e.ignore) { alert('got ended'); } }, false);
+      if (typeof player.addEventListener === 'function') {
+        player.addEventListener('play', function(e) { if (!e.ignore) { console.log('got real play event'); } }, false);
+        player.addEventListener('ended', function(e) { if (!e.ignore) { console.log('got real ended event'); } }, false);
+      }
 
     </script>
   </body>
