@@ -65,16 +65,24 @@
     <script src="videoplaza-html5.js"></script>
     <script>
 
+      // Set up our connection with Videoplaza
+      var vp = new VideoplazaAds('http://vp-validation.videoplaza.tv', true);
+
+      // Optionally disable ads
+      //vp.setAdsEnabled(false);
+
+      // Set our companion banner handler
       var companion = function(cb, zone, width, height) {
         console.log('got companion banner for zone ' + zone + ' with dimensions ' + width + 'x' + height);
         document.getElementById(zone).innerHTML = cb;
         return true;
       }
-
-      var vp = new VideoplazaAds('http://vp-validation.videoplaza.tv', true);
-      //vp.setAdsEnabled(false);
       vp.setCompanionHandler(companion);
+
+      // Set times for midrolls
       vp.setMidrolls([10,40,60]);
+
+      // Set meta information about currently playing content
       vp.setContentMeta({
         category: "validation",
         tags: ["standard"],
@@ -85,22 +93,24 @@
         duration: 123
       });
 
+      // Allow the user to skip ads longer than 'skiptime' seconds
+      var skiptime = 5;
       var skip = document.getElementById('skip');
       skip.onclick = function() { vp.skipCurrentAd(); }
       vp.setSkipHandler(function(adDuration) {
-        if (adDuration > 5) {
+        if (adDuration > skiptime) {
           skip.style.display = 'block';
         } else {
           skip.style.display = 'none';
         }
-      }, function() {
-        skip.style.display = 'none';
-      });
+      }, function() { skip.style.display = 'none'; });
 
+      // Set video properties (dimensions) and watch our player
       var player = document.getElementById('player');
       vp.setVideoProperties(player.clientWidth || player.offsetWidth, player.clientHeight || player.offsetHeight);
       vp.watchPlayer(player);
 
+      // Example of how to listen for "real" video events
       if (typeof player.addEventListener === 'function') {
         player.addEventListener('play', function(e) { if (!e.ignore) { console.log('got real play event'); } }, false);
         player.addEventListener('ended', function(e) { if (!e.ignore) { console.log('got real ended event'); } }, false);
