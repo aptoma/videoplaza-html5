@@ -20,6 +20,10 @@ function VideoplazaAds(vpHost, debug) {
   this.midrolls = [];
   this.lastPlayedMidroll = null;
   this.debug = !!debug;
+  this.skipHandler = {
+    start: null,
+    end: null
+  };
 
   this.adCall = new videoplaza.core.AdCallModule(vpHost);
   this.tracker = new videoplaza.core.Tracker();
@@ -27,6 +31,26 @@ function VideoplazaAds(vpHost, debug) {
 
 VideoplazaAds.prototype.log = function() {
   if (this.debug && console.log) { console.log(arguments); }
+}
+
+/**
+ * Set functions to be called when an ad starts, and when ads finish
+ *
+ * This should be used to handle the displaying of a skip button
+ *
+ * @param {function(adDuration : int)} onAdStarted Called whenever a new video ad is started
+ * @param {function} onAdEnded Called when a series of ads has finished
+ */
+VideoplazaAds.prototype.setSkipHandler = function (onAdStarted, onAdEnded) {
+  this.skipHandler.start = onAdStarted;
+  this.skipHandler.end = onAdEnded;
+}
+
+/**
+ * Call this method to skip the currently playing ad
+ */
+VideoplazaAds.prototype.skipCurrentAd = function() {
+  this._showNextAd();
 }
 
 /**
@@ -135,6 +159,11 @@ VideoplazaAds.prototype._showNextAd = function () {
   this.adIndex++;
   if (!this.adsEnabled || this.adIndex >= this.ads.length) {
     this.log('no more ads');
+
+    if (typeof this.skipHandler.end === 'function') {
+      this.skipHandler.end.call(this);
+    }
+
     this._resumeWatchedPlayer();
     return false;
   }
@@ -356,6 +385,11 @@ VideoplazaAds.prototype._playVideoAd = function () {
   this.log('playing ad', this.adVideo);
   this.unsentQuartiles = [0.25,0.5,0.75];
   this._createAdPlayer();
+
+  if (typeof this.skipHandler.start === 'function') {
+    this.skipHandler.start.call(this, this.adVideo.duration);
+  }
+
   this.adPlayer.setAttribute('src', this.adVideo.mediaFiles[0].uri);
   this.adPlayer.load();
 }

@@ -12,23 +12,37 @@
       h1 { margin: 20px auto 0; color: #EEE; font-size: 20px; font-weight: normal; }
       video {
         background: black;
-        height: 100px;
+        height: 100%;
         width: 100%;
         display: block;
         outline: none;
-        margin: 10px auto;
+        margin: 0 auto;
       }
+      #v { margin: 10px auto; position: relative; }
       #companionMpu { display: inline-block; border: 2px solid #CC3300; }
+      #skip {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        display: none;
+        background: #333;
+        color: white;
+        border-radius: 3px;
+        border: 1px solid black;
+        padding: .3em 1em;
+        font-size: 11px;
+        cursor: pointer;
+      }
 
-      @media screen and (max-width: 863px) { video { width: 640px; height: 360px; } }
-      @media screen and (max-width: 639px) { video { width: 576px; height: 324px; } }
-      @media screen and (max-width: 575px) { video { width: 480px; height: 270px; } }
-      @media screen and (max-width: 479px) { video { width: 320px; height: 180px; } }
-      @media screen and (max-width: 319px) { video { width: 240px; height: 135px; } }
+      @media screen and (max-width: 863px) { #v { width: 640px; height: 360px; } }
+      @media screen and (max-width: 639px) { #v { width: 576px; height: 324px; } }
+      @media screen and (max-width: 575px) { #v { width: 480px; height: 270px; } }
+      @media screen and (max-width: 479px) { #v { width: 320px; height: 180px; } }
+      @media screen and (max-width: 319px) { #v { width: 240px; height: 135px; } }
 
       @media screen and (min-width: 864px) {
-        video { border: 5px solid #333; border-radius: 5px; }
-        video { width: 854px; height: 480px; }
+        #v { border: 5px solid #333; border-radius: 5px; }
+        #v { width: 854px; height: 480px; }
         h1 { width: 854px; margin-top: 80px; font-size: 42px; }
         #companionMpu { position: fixed; bottom: 0; right: 10px; border-width: 5px; }
       }
@@ -37,10 +51,13 @@
   </head>
   <body>
     <h1>Videoplaza HTML5 integration demo</h1>
-    <video id="player" controls="true" autoplay="true">
-      <source src="video.ogg" />
-      <source src="video.mp4" />
-    </video>
+    <div id="v">
+      <video id="player" controls="true" autoplay="true">
+        <source src="video.ogg" />
+        <source src="video.mp4" />
+      </video>
+      <span id="skip">Skip ad</span>
+    </div>
     <div style="text-align: center;">
       <div id="companionMpu"></div>
     </div>
@@ -57,7 +74,7 @@
       var vp = new VideoplazaAds('http://vp-validation.videoplaza.tv', true);
       //vp.setAdsEnabled(false);
       vp.setCompanionHandler(companion);
-      vp.setMidrolls([20,40,60]);
+      vp.setMidrolls([10,40,60]);
       vp.setContentMeta({
         category: "validation",
         tags: ["standard"],
@@ -67,6 +84,19 @@
         contentPartner: "blabla_test",
         duration: 123
       });
+
+      var skip = document.getElementById('skip');
+      skip.onclick = function() { vp.skipCurrentAd(); }
+      vp.setSkipHandler(function(adDuration) {
+        if (adDuration > 5) {
+          skip.style.display = 'block';
+        } else {
+          skip.style.display = 'none';
+        }
+      }, function() {
+        skip.style.display = 'none';
+      });
+
       var player = document.getElementById('player');
       vp.setVideoProperties(player.clientWidth || player.offsetWidth, player.clientHeight || player.offsetHeight);
       vp.watchPlayer(player);
