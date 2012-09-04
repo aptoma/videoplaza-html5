@@ -31,7 +31,7 @@ function VideoplazaAds(vpHost, debug) {
 
 VideoplazaAds.prototype.log = function() {
   if (this.debug && console.log) { console.log(arguments); }
-}
+};
 
 /**
  * Set functions to be called when an ad starts, and when ads finish
@@ -44,14 +44,14 @@ VideoplazaAds.prototype.log = function() {
 VideoplazaAds.prototype.setSkipHandler = function (onAdStarted, onAdEnded) {
   this.skipHandler.start = onAdStarted;
   this.skipHandler.end = onAdEnded;
-}
+};
 
 /**
  * Call this method to skip the currently playing ad
  */
 VideoplazaAds.prototype.skipCurrentAd = function() {
   this._showNextAd();
-}
+};
 
 /**
  * Set whether ads are enabled
@@ -60,7 +60,7 @@ VideoplazaAds.prototype.skipCurrentAd = function() {
  */
 VideoplazaAds.prototype.setAdsEnabled = function (enabled) {
   this.adsEnabled = enabled;
-}
+};
 
 /**
  * Set or clear the function to call to display a companion banner
@@ -76,7 +76,7 @@ VideoplazaAds.prototype.setAdsEnabled = function (enabled) {
  */
 VideoplazaAds.prototype.setCompanionHandler = function (callback) {
   this.companionHandler = callback;
-}
+};
 
 /**
  * Set where midrolls should occur
@@ -89,7 +89,7 @@ VideoplazaAds.prototype.setMidrolls = function (midrolls) {
   }
   this.midrolls = midrolls;
   this.lastPlayedMidroll = null;
-}
+};
 
 /**
  * Binds the given callback to the given event on the given element
@@ -107,7 +107,7 @@ VideoplazaAds.prototype._listen = function(element, event, callback) {
   } else {
     element.attachEvent('on' + event, c);
   }
-}
+};
 
 /**
  * Set meta data to send to Videoplaza when requesting ads
@@ -123,7 +123,7 @@ VideoplazaAds.prototype._listen = function(element, event, callback) {
  */
 VideoplazaAds.prototype.setContentMeta = function (meta) {
   this.contentMeta = meta;
-}
+};
 
 /**
  * Give information about the environment for the ad
@@ -136,7 +136,7 @@ VideoplazaAds.prototype.setVideoProperties = function (width, height, bitrate) {
   this.requestSettings.width = width;
   this.requestSettings.height = height;
   this.requestSettings.bitrate = bitrate;
-}
+};
 
 /**
  * Called when ads are received from Videoplaza
@@ -148,7 +148,7 @@ VideoplazaAds.prototype._onAds = function (ads) {
   this.ads = ads;
   this.adIndex = -1;
   this._showNextAd();
-}
+};
 
 /**
  * Show the next ad in the last received list of ads
@@ -184,7 +184,7 @@ VideoplazaAds.prototype._showNextAd = function () {
       this._onError('ad format ' + this.ad.type + ' not supported');
       return false;
   }
-}
+};
 
 /**
  * Show the given companion banner
@@ -199,17 +199,22 @@ VideoplazaAds.prototype._showNextAd = function () {
  */
 VideoplazaAds.prototype._showCompanion = function (companion) {
   this.log('show companion banner', companion);
+  if (typeof this.companionHandler !== 'function') {
+    return false;
+  }
+
   var cb = '<iframe scrolling="no" frameborder="0" '+
     'width="' + companion.width + '" '+
     'height="' + companion.height + '" '+
     'src="' + companion.resource + '"></iframe>';
 
-  return typeof this.companionHandler === 'function' &&
-         this.companionHandler(cb, companion.zoneId, companion.width, companion.height) &&
-         (this.tracker.track(companion, VPT.creative.creativeView) || true)
+  if (this.companionHandler(cb, companion.zoneId, companion.width, companion.height)) {
+    this.tracker.track(companion, VPT.creative.creativeView);
+    return true;
+  }
 
   return false;
-}
+};
 
 /**
  * Display all the given creatives
@@ -242,7 +247,7 @@ VideoplazaAds.prototype._displayAdCreatives = function (creatives) {
   }
 
   this._playVideoAd();
-}
+};
 
 /**
  * Should be called if Videoplaza encounters an error
@@ -256,7 +261,7 @@ VideoplazaAds.prototype._onError = function (message) {
     console.error('Videoplaza error: ' + message);
   }
   this._resumeWatchedPlayer();
-}
+};
 
 /**
  * Fetches and displays ads
@@ -279,7 +284,7 @@ VideoplazaAds.prototype._runAds = function (insertionPoint, includePosition) {
   var a = function(message) { _this._onAds.call(_this, message); };
   var e = function(message) { _this._onError.call(_this, message); };
   this.adCall.requestAds(this.contentMeta, this.requestSettings, a, e);
-}
+};
 
 /**
  * Destroy the ad player if it exists
@@ -292,7 +297,7 @@ VideoplazaAds.prototype._destroyAdPlayer = function() {
     this.watchedPlayer.style.display = 'block';
     this.adPlayer = null;
   }
-}
+};
 
 /**
  * Callback for tracking when an ad starts playing or resumes
@@ -310,7 +315,7 @@ VideoplazaAds.prototype._onAdPlay = function() {
   }
 
   this.adPlaying = true;
-}
+};
 
 /**
  * Ad click handler
@@ -322,7 +327,7 @@ VideoplazaAds.prototype._onAdClick = function (e) {
   this.tracker.track(this.adVideo, VPT.creative.clickThrough);
   window.open(this.adVideo.clickThroughUri, '_blank');
   e.preventDefault();
-}
+};
 
 VideoplazaAds.prototype._onAdTick = function (e) {
   var percent = this.adPlayer.currentTime / this.adVideo.duration;
@@ -343,7 +348,7 @@ VideoplazaAds.prototype._onAdTick = function (e) {
         break;
     }
   }
-}
+};
 
 /**
  * Create the ad player element (unless it already exists)
@@ -376,7 +381,7 @@ VideoplazaAds.prototype._createAdPlayer = function() {
   }
 
   return false;
-}
+};
 
 /**
  * Play the current video ad
@@ -392,14 +397,14 @@ VideoplazaAds.prototype._playVideoAd = function () {
 
   this.adPlayer.setAttribute('src', this.adVideo.mediaFiles[0].uri);
   this.adPlayer.load();
-}
+};
 
 /**
  * Called when the ad has loaded and can be played
  */
 VideoplazaAds.prototype._onAdCanPlay = function () {
   this.adPlayer.play();
-}
+};
 
 /**
  * Resumes normal video playback and destroys the ad player
@@ -414,7 +419,7 @@ VideoplazaAds.prototype._resumeWatchedPlayer = function() {
   if (this.watchedPlayer.ended) {
     this._triggerVideoEvent('ended');
   }
-}
+};
 
 /**
  * Trigger an event with the given type on the currently watched player
@@ -439,7 +444,7 @@ VideoplazaAds.prototype._triggerVideoEvent = function(eType) {
   } else {
     this.watchedPlayer.fireEvent("on" + event.eventType, event);
   }
-}
+};
 
 /**
  * Shows a midroll if a midroll should be played
@@ -460,9 +465,9 @@ VideoplazaAds.prototype._checkForMidroll = function () {
   if (potentialMidroll !== null && potentialMidroll !== this.lastPlayedMidroll) {
     this.log('playing overdue midroll ' + potentialMidroll);
     this.lastPlayedMidroll = potentialMidroll;
-    this._runAds('playbackPosition', true)
+    this._runAds('playbackPosition', true);
   }
-}
+};
 
 /**
  * Watch the given player, and inject ads when appropriate
@@ -516,4 +521,4 @@ VideoplazaAds.prototype.watchPlayer = function(videoElement) {
   });
 
   return true;
-}
+};
