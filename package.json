@@ -1,0 +1,25 @@
+{
+    "author": "Jon Gjengset <jon@aptoma.com>",
+    "contributors": [
+        {
+            "name": "Gunnar Lium",
+            "email": "gunnar@aptoma.com"
+        }
+    ],
+    "name": "videoplaza-html5",
+    "description": "Plugin for Videoplaza HTML5 video ad solution",
+    "version": "0.1.0",
+    "homepage": "https://github.com/aptoma/videoplaza-html5",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aptoma/videoplaza-html5"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT"
+        }
+    ],
+    "private": false,
+    "optionalDependencies": {}
+}

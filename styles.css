@@ -1,0 +1,109 @@
+html {
+    height: 100%;
+    background: #111;
+    background: -webkit-radial-gradient(center 200px, ellipse cover, #333 0%, #111 70%);
+}
+
+body {
+    font-family: sans-serif;
+}
+
+h1 {
+    margin: 20px auto 0;
+    color: #EEE;
+    font-size: 20px;
+    font-weight: normal;
+}
+
+video {
+    background: black;
+    height: 100%;
+    width: 100%;
+    display: block;
+    outline: none;
+    margin: 0 auto;
+}
+
+#v {
+    margin: 10px auto;
+    position: relative;
+}
+
+#companionMpu {
+    display: inline-block;
+    border: 2px solid #CC3300;
+}
+
+#skip {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;
+    background: #333;
+    color: white;
+    border-radius: 3px;
+    border: 1px solid black;
+    padding: .3em 1em;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+@media screen and (max-width: 863px) {
+    #v {
+        width: 640px;
+        height: 360px;
+    }
+}
+
+@media screen and (max-width: 639px) {
+    #v {
+        width: 576px;
+        height: 324px;
+    }
+}
+
+@media screen and (max-width: 575px) {
+    #v {
+        width: 480px;
+        height: 270px;
+    }
+}
+
+@media screen and (max-width: 479px) {
+    #v {
+        width: 320px;
+        height: 180px;
+    }
+}
+
+@media screen and (max-width: 319px) {
+    #v {
+        width: 240px;
+        height: 135px;
+    }
+}
+
+@media screen and (min-width: 864px) {
+    #v {
+        border: 5px solid #333;
+        border-radius: 5px;
+    }
+
+    #v {
+        width: 854px;
+        height: 480px;
+    }
+
+    h1 {
+        width: 854px;
+        margin-top: 80px;
+        font-size: 42px;
+    }
+
+    #companionMpu {
+        position: fixed;
+        bottom: 0;
+        right: 10px;
+        border-width: 5px;
+    }
+}

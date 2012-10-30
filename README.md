@@ -1,20 +1,14 @@
 # What is this? #
-Videoplaza is a provider of ads for video, and have recently (as of May
-2012) released a major rewrite of their HTML5 video solution.
+Videoplaza is a provider of ads for video.
 
 This repository contains a library written to make writing a working
-integration substantially easier. It will take care of all forms of
-tracking, displaying prerolls, midrolls and postrolls, as well as
-companion banners in a flexible and standards compliant way.
+integration with Videoplaza substantially easier. It will take care of
+all forms of tracking, displaying prerolls, midrolls and postrolls, as
+well as companion banners in a flexible and standards compliant way.
 
 # Do you have an example? #
 
 Yes, just open index.html.
-
-Note that you should download video.ogg or video.mp4 (or both) yourself,
-since video files aren't really good to put in a repo. [Big Buck
-Bunny](http://www.bigbuckbunny.org/index.php/download/) works well and
-is easily available.
 
 # How do I use it? #
 To use the library, include it in your page after the Videoplaza HTML5

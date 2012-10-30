@@ -1,89 +1,45 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>VideoPlaza HTML5 video ads</title>
-    <style>
-      html {
-        height: 100%;
-        background: #111;
-        background: -webkit-radial-gradient(center 200px, ellipse cover, #333 0%, #111 70%);
-      }
-      body { font-family: sans-serif; }
-      h1 { margin: 20px auto 0; color: #EEE; font-size: 20px; font-weight: normal; }
-      video {
-        background: black;
-        height: 100%;
-        width: 100%;
-        display: block;
-        outline: none;
-        margin: 0 auto;
-      }
-      #v { margin: 10px auto; position: relative; }
-      #companionMpu { display: inline-block; border: 2px solid #CC3300; }
-      #skip {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        display: none;
-        background: #333;
-        color: white;
-        border-radius: 3px;
-        border: 1px solid black;
-        padding: .3em 1em;
-        font-size: 11px;
-        cursor: pointer;
-      }
-
-      @media screen and (max-width: 863px) { #v { width: 640px; height: 360px; } }
-      @media screen and (max-width: 639px) { #v { width: 576px; height: 324px; } }
-      @media screen and (max-width: 575px) { #v { width: 480px; height: 270px; } }
-      @media screen and (max-width: 479px) { #v { width: 320px; height: 180px; } }
-      @media screen and (max-width: 319px) { #v { width: 240px; height: 135px; } }
-
-      @media screen and (min-width: 864px) {
-        #v { border: 5px solid #333; border-radius: 5px; }
-        #v { width: 854px; height: 480px; }
-        h1 { width: 854px; margin-top: 80px; font-size: 42px; }
-        #companionMpu { position: fixed; bottom: 0; right: 10px; border-width: 5px; }
-      }
-    </style>
+    <link href="styles.css" rel="stylesheet" type="text/css" />
     <meta name="viewport" content="width=device-width">
-  </head>
-  <body>
-    <h1>Videoplaza HTML5 integration demo</h1>
-    <div id="v">
-      <video id="player" controls="true" autoplay="true">
-        <source src="video.ogg" />
-        <source src="video.mp4" />
-      </video>
-      <span id="skip">Skip ad</span>
-    </div>
-    <div style="text-align: center;">
-      <div id="companionMpu"></div>
-    </div>
-    <script src="http://vp-validation.cdn.videoplaza.tv/resources/html5-sdk/1/0.12.7.0-ea/html5-sdk-1.0.12.7.0-ea.min.js"></script>
-    <script src="videoplaza-html5.js"></script>
-    <script>
+</head>
+<body>
+<h1>Videoplaza HTML5 integration demo</h1>
 
-      // Set up our connection with Videoplaza
-      var vp = new VideoplazaAds('http://vp-validation.videoplaza.tv', true);
+<div id="v">
+    <video id="player" controls preload="none" poster="http://video-js.zencoder.com/oceans-clip.jpg">
+        <source id='mp4' src="http://video-js.zencoder.com/oceans-clip.mp4" type='video/mp4'>
+        <source id='webm' src="http://video-js.zencoder.com/oceans-clip.webm" type='video/webm'>
+    </video>
+    <span id="skip">Skip ad</span>
+</div>
+<div style="text-align: center;">
+    <div id="companionMpu"></div>
+</div>
+<script src="http://vp-validation.cdn.videoplaza.tv/resources/html5-sdk/1/0.12.9.0-ea/html5-sdk-1.0.12.9.0-ea.min.js"></script>
+<script src="videoplaza-html5.js"></script>
+<script>
 
-      // Optionally disable ads
-      //vp.setAdsEnabled(false);
+    // Set up our connection with Videoplaza
+    var vp = new VideoplazaAds('http://vp-validation.videoplaza.tv', true);
+    // Optionally disable ads
+    //vp.setAdsEnabled(false);
 
-      // Set our companion banner handler
-      var companion = function(cb, zone, width, height) {
+    // Set our companion banner handler
+    var companion = function (cb, zone, width, height) {
         console.log('got companion banner for zone ' + zone + ' with dimensions ' + width + 'x' + height);
         document.getElementById(zone).innerHTML = cb;
         return true;
-      }
-      vp.setCompanionHandler(companion);
+    };
+    vp.setCompanionHandler(companion);
 
-      // Set times for midrolls
-      vp.setMidrolls([10,40,60]);
+    // Set times for midrolls
+    vp.setMidrolls([10, 40, 60]);
 
-      // Set meta information about currently playing content
-      vp.setContentMeta({
+    // Set meta information about currently playing content
+    vp.setContentMeta({
         category: "validation",
         tags: ["standard"],
         flags: [],
@@ -91,31 +47,42 @@
         contentId: "1234",
         contentPartner: "blabla_test",
         duration: 123
-      });
+    });
 
-      // Allow the user to skip ads longer than 'skiptime' seconds
-      var skiptime = 5;
-      var skip = document.getElementById('skip');
-      skip.onclick = function() { vp.skipCurrentAd(); }
-      vp.setSkipHandler(function(adDuration) {
+    // Allow the user to skip ads longer than 'skiptime' seconds
+    var skiptime = 5;
+    var skip = document.getElementById('skip');
+    skip.onclick = function () {
+        vp.skipCurrentAd();
+    };
+    vp.setSkipHandler(function (adDuration) {
         if (adDuration > skiptime) {
-          skip.style.display = 'block';
+            skip.style.display = 'block';
         } else {
-          skip.style.display = 'none';
+            skip.style.display = 'none';
         }
-      }, function() { skip.style.display = 'none'; });
+    }, function () {
+        skip.style.display = 'none';
+    });
 
-      // Set video properties (dimensions) and watch our player
-      var player = document.getElementById('player');
-      vp.setVideoProperties(player.clientWidth || player.offsetWidth, player.clientHeight || player.offsetHeight);
-      vp.watchPlayer(player);
+    // Set video properties (dimensions) and watch our player
+    var player = document.getElementById('player');
+    vp.setVideoProperties(player.clientWidth || player.offsetWidth, player.clientHeight || player.offsetHeight);
+    vp.watchPlayer(player);
 
-      // Example of how to listen for "real" video events
-      if (typeof player.addEventListener === 'function') {
-        player.addEventListener('play', function(e) { if (!e.ignore) { console.log('got real play event'); } }, false);
-        player.addEventListener('ended', function(e) { if (!e.ignore) { console.log('got real ended event'); } }, false);
-      }
-
-    </script>
-  </body>
+    // Example of how to listen for "real" video events
+    if (typeof player.addEventListener === 'function') {
+        player.addEventListener('play', function (e) {
+            if (!e.ignore) {
+                console.log('got real play event');
+            }
+        }, false);
+        player.addEventListener('ended', function (e) {
+            if (!e.ignore) {
+                console.log('got real ended event');
+            }
+        }, false);
+    }
+</script>
+</body>
 </html>
