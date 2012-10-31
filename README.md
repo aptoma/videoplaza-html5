@@ -8,7 +8,7 @@ well as companion banners in a flexible and standards compliant way.
 
 # Do you have an example? #
 
-Yes, just open index.html.
+Yes, just open demo/index.html.
 
 # How do I use it? #
 To use the library, include it in your page after the Videoplaza HTML5
@@ -40,7 +40,7 @@ is taken into account).
 Also, remember to call setContentMeta before each new video is to be
 displayed to set the correct data to send to the Videoplaza backend.
 
-**All of this should be very apparent by looking at index.html**
+**All of this should be very apparent by looking at demo/index.html**
 
 ### A note on events ###
 Note that this implementation depends on being able to listen for the

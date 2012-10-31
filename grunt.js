@@ -12,12 +12,12 @@ module.exports = function(grunt) {
         ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */'
     },
     lint: {
-      files: ['grunt.js', 'videoplaza-html5.js']
+      files: ['grunt.js', 'src/videoplaza-html5.js']
     },
     min: {
       dist: {
-        src: ['<banner:meta.banner>', 'videoplaza-html5.js'],
-        dest: '<%= pkg.name %>.min.js'
+        src: ['<banner:meta.banner>', 'src/videoplaza-html5.js'],
+        dest: 'dist/<%= pkg.name %>.min.js'
       }
     },
     watch: {
