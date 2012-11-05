@@ -333,11 +333,17 @@ VideoplazaAds.prototype._onAdPlay = function () {
  *
  * @param {Event} e Click event
  */
-VideoplazaAds.prototype._onAdClick = function (e) {
+VideoplazaAds.prototype._onAdClick = function _onAdClick(e) {
+    // @TODO: This is needed for Android ad playback. May need more TLC
+    if (!this.adPlaying) {
+        this.log('ad click with no ad playing, fallthrough to start playback.');
+        return true;
+    }
     this.log('ad click through to ' + this.adVideo.clickThroughUri);
     this.tracker.track(this.adVideo, VPT.creative.clickThrough);
     window.open(this.adVideo.clickThroughUri, '_blank');
     e.preventDefault();
+    return false;
 };
 
 VideoplazaAds.prototype._onAdTick = function (e) {
@@ -373,7 +379,9 @@ VideoplazaAds.prototype._createAdPlayer = function () {
         this.adPlayer = document.createElement('video');
         this.adPlayer.setAttribute('width', this.watchedPlayer.clientWidth || this.watchedPlayer.offsetWidth);
         this.adPlayer.setAttribute('height', this.watchedPlayer.clientHeight || this.watchedPlayer.offsetHeight);
-        this.adPlayer.setAttribute('controls', false);
+        if (navigator.userAgent.match(/iPad|iPod|iPhone|Android/)) {
+            this.adPlayer.setAttribute('controls');
+        }
         this.adPlayer.setAttribute('preload', true);
         this._listen(this.adPlayer, 'play', this._onAdPlay);
         this._listen(this.adPlayer, 'click', this._onAdClick);
