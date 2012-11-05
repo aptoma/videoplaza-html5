@@ -1,11 +1,11 @@
 /*global videoplaza */
-var VPT = videoplaza.core.Tracker.trackingEvents;
 
 /**
  * Create a new VideoplazaAds integration
  *
  * @class
  * @param {string} vpHost Videoplaza Host URL
+ * @param debug
  */
 function VideoplazaAds(vpHost, debug) {
     this.vpHost = vpHost;
@@ -28,11 +28,18 @@ function VideoplazaAds(vpHost, debug) {
 
     this.adCall = new videoplaza.core.AdCallModule(vpHost);
     this.tracker = new videoplaza.core.Tracker();
+    this.trackingEvents = videoplaza.core.Tracker.trackingEvents;
 }
 
-VideoplazaAds.prototype.log = function () {
+VideoplazaAds.prototype.log = function log() {
     if (this.debug && console.log) {
-        console.log(arguments);
+        console.log.apply(console, arguments);
+    }
+};
+
+VideoplazaAds.prototype.logError = function logError() {
+    if (console.error) {
+        console.error.apply(console, arguments);
     }
 };
 
@@ -44,7 +51,7 @@ VideoplazaAds.prototype.log = function () {
  * @param {function(adDuration : int)} onAdStarted Called whenever a new video ad is started
  * @param {function} onAdEnded Called when a series of ads has finished
  */
-VideoplazaAds.prototype.setSkipHandler = function (onAdStarted, onAdEnded) {
+VideoplazaAds.prototype.setSkipHandler = function setSkipHandler(onAdStarted, onAdEnded) {
     this.skipHandler.start = onAdStarted;
     this.skipHandler.end = onAdEnded;
 };
@@ -52,7 +59,7 @@ VideoplazaAds.prototype.setSkipHandler = function (onAdStarted, onAdEnded) {
 /**
  * Call this method to skip the currently playing ad
  */
-VideoplazaAds.prototype.skipCurrentAd = function () {
+VideoplazaAds.prototype.skipCurrentAd = function skipCurrentAd() {
     this._showNextAd();
 };
 
@@ -61,7 +68,7 @@ VideoplazaAds.prototype.skipCurrentAd = function () {
  *
  * @param {boolean} enabled Whether to enabled ads or not
  */
-VideoplazaAds.prototype.setAdsEnabled = function (enabled) {
+VideoplazaAds.prototype.setAdsEnabled = function setAdsEnabled(enabled) {
     this.adsEnabled = enabled;
 };
 
@@ -74,11 +81,11 @@ VideoplazaAds.prototype.setAdsEnabled = function (enabled) {
  *
  * If the argument to this function is not a function, the existing handler will be cleared
  *
- * @param {?function(object): boolean} companionHandler
+ * @param {?function(object): boolean} companionHandlerCallback
  *   Function to call when companion banners are to be displayed.
  */
-VideoplazaAds.prototype.setCompanionHandler = function (callback) {
-    this.companionHandler = callback;
+VideoplazaAds.prototype.setCompanionHandler = function setCompanionHandler(companionHandlerCallback) {
+    this.companionHandler = companionHandlerCallback;
 };
 
 /**
@@ -86,9 +93,9 @@ VideoplazaAds.prototype.setCompanionHandler = function (callback) {
  *
  * @param {Number[]} midrolls Timecodes (in seconds) for when midrolls should be triggered
  */
-VideoplazaAds.prototype.setMidrolls = function (midrolls) {
+VideoplazaAds.prototype.setMidrolls = function setMidrolls(midrolls) {
     if (typeof midrolls === typeof []) {
-        midrolls = midrolls.sort(function (a, b) {
+        midrolls.sort(function (a, b) {
             return a - b;
         });
     }
@@ -104,7 +111,7 @@ VideoplazaAds.prototype.setMidrolls = function (midrolls) {
  * @param {string} event Event to add a listener for
  * @param {function} callback Event callback
  */
-VideoplazaAds.prototype._listen = function (element, event, callback) {
+VideoplazaAds.prototype._listen = function _listen(element, event, callback) {
     var _this = this;
     var c = function (e) {
         callback.call(_this, e);
@@ -128,7 +135,7 @@ VideoplazaAds.prototype._listen = function (element, event, callback) {
  * @param {string[]} meta.tags Flags to override ad insertion policies
  * @param {string[]} meta.flags Content keywords for targeting
  */
-VideoplazaAds.prototype.setContentMeta = function (meta) {
+VideoplazaAds.prototype.setContentMeta = function setContentMeta(meta) {
     this.contentMeta = meta;
 };
 
@@ -137,9 +144,9 @@ VideoplazaAds.prototype.setContentMeta = function (meta) {
  *
  * @param {Number} width Width of the video frame
  * @param {Number} height Height of the video frame
- * @param {Number} [bitrate] The maximum bitrate of the ad
+ * @param {Number} [bitrate] The maximum bitrate (in Kbps) of the ad
  */
-VideoplazaAds.prototype.setVideoProperties = function (width, height, bitrate) {
+VideoplazaAds.prototype.setVideoProperties = function setVideoProperties(width, height, bitrate) {
     this.requestSettings.width = width;
     this.requestSettings.height = height;
     this.requestSettings.bitrate = bitrate;
@@ -150,7 +157,7 @@ VideoplazaAds.prototype.setVideoProperties = function (width, height, bitrate) {
  *
  * @param {object[]} ads The ads received
  */
-VideoplazaAds.prototype._onAds = function (ads) {
+VideoplazaAds.prototype._onAds = function _onAds(ads) {
     this.log('got ads', ads);
     this.ads = ads;
     this.adIndex = -1;
@@ -162,7 +169,7 @@ VideoplazaAds.prototype._onAds = function (ads) {
  *
  * @return {boolean} Whether another ad was played or not
  */
-VideoplazaAds.prototype._showNextAd = function () {
+VideoplazaAds.prototype._showNextAd = function _showNextAd() {
     this.adIndex++;
     if (!this.adsEnabled || this.adIndex >= this.ads.length) {
         this.log('no more ads');
@@ -185,7 +192,7 @@ VideoplazaAds.prototype._showNextAd = function () {
             return true;
         case 'inventory':
             this.log('found inventory');
-            this.tracker.track(this.ad, VPT.ad.impression);
+            this.tracker.track(this.ad, this.trackingEvents.ad.impression);
             return this._showNextAd();
         default:
             this._onError('ad format ' + this.ad.type + ' not supported');
@@ -204,7 +211,7 @@ VideoplazaAds.prototype._showNextAd = function () {
  * @param {string} companion.type Always === 'companion'
  * @return {boolean} Whether the companion banner was successfully shown
  */
-VideoplazaAds.prototype._showCompanion = function (companion) {
+VideoplazaAds.prototype._showCompanion = function _showCompanion(companion) {
     this.log('show companion banner', companion);
     if (typeof this.companionHandler !== 'function') {
         return false;
@@ -216,7 +223,7 @@ VideoplazaAds.prototype._showCompanion = function (companion) {
         'src="' + companion.resource + '"></iframe>';
 
     if (this.companionHandler(cb, companion.zoneId, companion.width, companion.height)) {
-        this.tracker.track(companion, VPT.creative.creativeView);
+        this.tracker.track(companion, this.trackingEvents.creative.creativeView);
         return true;
     }
 
@@ -231,7 +238,7 @@ VideoplazaAds.prototype._showCompanion = function (companion) {
  *
  * @param {object[]} creatives List of creatives to display
  */
-VideoplazaAds.prototype._displayAdCreatives = function (creatives) {
+VideoplazaAds.prototype._displayAdCreatives = function _displayAdCreatives(creatives) {
     this.adVideo = null;
 
     this.log('found ' + creatives.length + ' creatives for ad');
@@ -242,13 +249,13 @@ VideoplazaAds.prototype._displayAdCreatives = function (creatives) {
         } else if (creatives[i].type === 'companion') {
             this.log('found companion creative', creatives[i]);
             if (!this._showCompanion(creatives[i])) {
-                console.error("Videoplaza error: no way of displaying companion ad");
+                this.logError("Videoplaza error: no way of displaying companion ad");
             }
         }
     }
 
     if (!this.adVideo) {
-        console.error("Videoplaza error: bad ad - no video", this.ad);
+        this.logError("Videoplaza error: bad ad - no video", this.ad);
         this._showNextAd();
         return;
     }
@@ -263,10 +270,8 @@ VideoplazaAds.prototype._displayAdCreatives = function (creatives) {
  *
  * @param {string} message A message describing the error
  */
-VideoplazaAds.prototype._onError = function (message) {
-    if (console.error) {
-        console.error('Videoplaza error: ' + message);
-    }
+VideoplazaAds.prototype._onError = function _onError(message) {
+    this.logError('Videoplaza error: ' + message);
     this._resumeWatchedPlayer();
 };
 
@@ -274,10 +279,10 @@ VideoplazaAds.prototype._onError = function (message) {
  * Fetches and displays ads
  *
  * @param {string} insertionPoint The type of ad to fetch
+ *      May be one of: onBeforeContent, playbackPosition, onContentEnd, playbackTime, onSeek
  * @param {boolean} [includePosition] Whether to send the current video position
- *  May be one of: onBeforeContent, playbackPosition, onContentEnd, playbackTime, onSeek
  */
-VideoplazaAds.prototype._runAds = function (insertionPoint, includePosition) {
+VideoplazaAds.prototype._runAds = function _runAds(insertionPoint, includePosition) {
     this.watchedPlayer.pause();
     this.requestSettings.insertionPointType = insertionPoint;
 
@@ -288,19 +293,19 @@ VideoplazaAds.prototype._runAds = function (insertionPoint, includePosition) {
     }
 
     var _this = this;
-    var a = function (message) {
+    var onSuccess = function onAdRequestSuccess(message) {
         _this._onAds.call(_this, message);
     };
-    var e = function (message) {
+    var onFail = function onAdRequestFail(message) {
         _this._onError.call(_this, message);
     };
-    this.adCall.requestAds(this.contentMeta, this.requestSettings, a, e);
+    this.adCall.requestAds(this.contentMeta, this.requestSettings, onSuccess, onFail);
 };
 
 /**
  * Destroy the ad player if it exists
  */
-VideoplazaAds.prototype._destroyAdPlayer = function () {
+VideoplazaAds.prototype._destroyAdPlayer = function _destroyAdPlayer() {
     this.log('told to destroy ad player');
     if (this.adPlayer) {
         this.log('actually destroyed ad player');
@@ -313,16 +318,16 @@ VideoplazaAds.prototype._destroyAdPlayer = function () {
 /**
  * Callback for tracking when an ad starts playing or resumes
  */
-VideoplazaAds.prototype._onAdPlay = function () {
+VideoplazaAds.prototype._onAdPlay = function _onAdPlay() {
     if (!this.adPlaying) {
         this.log('ad started playing');
-        this.tracker.track(this.ad, VPT.ad.impression);
-        this.tracker.track(this.adVideo, VPT.creative.creativeView);
-        this.tracker.track(this.adVideo, VPT.creative.start);
+        this.tracker.track(this.ad, this.trackingEvents.ad.impression);
+        this.tracker.track(this.adVideo, this.trackingEvents.creative.creativeView);
+        this.tracker.track(this.adVideo, this.trackingEvents.creative.start);
     } else {
         // resume
         this.log('ad resumed');
-        this.tracker.track(this.adVideo, VPT.creative.resume);
+        this.tracker.track(this.adVideo, this.trackingEvents.creative.resume);
     }
 
     this.adPlaying = true;
@@ -340,31 +345,42 @@ VideoplazaAds.prototype._onAdClick = function _onAdClick(e) {
         return true;
     }
     this.log('ad click through to ' + this.adVideo.clickThroughUri);
-    this.tracker.track(this.adVideo, VPT.creative.clickThrough);
+    this.tracker.track(this.adVideo, this.trackingEvents.creative.clickThrough);
     window.open(this.adVideo.clickThroughUri, '_blank');
     e.preventDefault();
     return false;
 };
 
-VideoplazaAds.prototype._onAdTick = function (e) {
+/**
+ * Track progress on ad playback
+ *
+ * @param {Event} e Time update event
+ */
+VideoplazaAds.prototype._onAdTick = function _onAdTick(e) {
+    if (!(this.adPlayer && this.adVideo)) {
+        this.log('Ad player or ad video not ready');
+        return false;
+    }
     var percent = this.adPlayer.currentTime / this.adVideo.duration;
     if (this.unsentQuartiles.length && percent > this.unsentQuartiles[0]) {
         var q = this.unsentQuartiles.shift();
         switch (q) {
             case 0.25:
                 this.log('logged first quartile');
-                this.tracker.track(this.adVideo, VPT.creative.firstQuartile);
+                this.tracker.track(this.adVideo, this.trackingEvents.creative.firstQuartile);
                 break;
             case 0.5:
                 this.log('logged midpoint');
-                this.tracker.track(this.adVideo, VPT.creative.midpoint);
+                this.tracker.track(this.adVideo, this.trackingEvents.creative.midpoint);
                 break;
             case 0.75:
                 this.log('logged third quartile');
-                this.tracker.track(this.adVideo, VPT.creative.thirdQuartile);
+                this.tracker.track(this.adVideo, this.trackingEvents.creative.thirdQuartile);
                 break;
         }
     }
+
+    return true;
 };
 
 /**
@@ -372,7 +388,7 @@ VideoplazaAds.prototype._onAdTick = function (e) {
  *
  * @return {boolean} Whether a player was created
  */
-VideoplazaAds.prototype._createAdPlayer = function () {
+VideoplazaAds.prototype._createAdPlayer = function _createAdPlayer() {
     this.log('told to create ad player');
     if (this.watchedPlayer && !this.adPlayer) {
         this.log('actually created ad player');
@@ -382,7 +398,7 @@ VideoplazaAds.prototype._createAdPlayer = function () {
         if (navigator.userAgent.match(/iPad|iPod|iPhone|Android/)) {
             this.adPlayer.setAttribute('controls');
         }
-        this.adPlayer.setAttribute('preload', true);
+        this.adPlayer.setAttribute('preload', 'auto');
         this._listen(this.adPlayer, 'play', this._onAdPlay);
         this._listen(this.adPlayer, 'click', this._onAdClick);
         this._listen(this.adPlayer, 'canplay', this._onAdCanPlay);
@@ -405,7 +421,7 @@ VideoplazaAds.prototype._createAdPlayer = function () {
 /**
  * Play the current video ad
  */
-VideoplazaAds.prototype._playVideoAd = function () {
+VideoplazaAds.prototype._playVideoAd = function _playVideoAd() {
     this.log('playing ad', this.adVideo);
     this.unsentQuartiles = [0.25, 0.5, 0.75];
     this._createAdPlayer();
@@ -421,14 +437,14 @@ VideoplazaAds.prototype._playVideoAd = function () {
 /**
  * Called when the ad has loaded and can be played
  */
-VideoplazaAds.prototype._onAdCanPlay = function () {
+VideoplazaAds.prototype._onAdCanPlay = function _onAdCanPlay() {
     this.adPlayer.play();
 };
 
 /**
  * Resumes normal video playback and destroys the ad player
  */
-VideoplazaAds.prototype._resumeWatchedPlayer = function () {
+VideoplazaAds.prototype._resumeWatchedPlayer = function _resumeWatchedPlayer() {
     this.log('resuming watched player');
     this._destroyAdPlayer();
     if (this.watchedPlayer && this.watchedPlayer.paused && !this.watchedPlayer.ended) {
@@ -446,7 +462,7 @@ VideoplazaAds.prototype._resumeWatchedPlayer = function () {
  * @see http://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
  * @param {string} eType Event type to trigger
  */
-VideoplazaAds.prototype._triggerVideoEvent = function (eType) {
+VideoplazaAds.prototype._triggerVideoEvent = function _triggerVideoEvent(eType) {
     if (!this.watchedPlayer) {
         return;
     }
@@ -468,6 +484,19 @@ VideoplazaAds.prototype._triggerVideoEvent = function (eType) {
 };
 
 /**
+ * Shows a preroll if a preroll should be played
+ *
+ * @param {Event} e event that triggered this callback
+ */
+VideoplazaAds.prototype._checkForPreroll = function _checkForPreroll(e) {
+    if (!this.hasShownPreroll) {
+        this._runAds('onBeforeContent');
+        this.hasShownPreroll = true;
+        e.ignore = true;
+    }
+};
+
+/**
  * Shows a midroll if a midroll should be played
  *
  * This is determined by looking through the list of midrolls (which is sorted),
@@ -475,23 +504,52 @@ VideoplazaAds.prototype._triggerVideoEvent = function (eType) {
  * If the last midroll shown was not the one we last passed, then we
  * show that one.
  */
-VideoplazaAds.prototype._checkForMidroll = function () {
-    var position = this.watchedPlayer.startTime + this.watchedPlayer.currentTime;
+VideoplazaAds.prototype._checkForMidroll = function _checkForMidroll() {
+    if (this.midrolls.length === 0) {
+        return false;
+    }
     var potentialMidroll = null;
     for (var i = 0, l = this.midrolls.length; i < l; i++) {
-        if (this.midrolls[i] > position) {
+        if (this.midrolls[i] > this.watchedPlayer.currentTime) {
             break;
         }
         potentialMidroll = i;
     }
-
     if (potentialMidroll !== null && potentialMidroll !== this.lastPlayedMidroll) {
         this.log('playing overdue midroll ' + potentialMidroll);
         this.lastPlayedMidroll = potentialMidroll;
         this._runAds('playbackPosition', true);
+
+        return true;
+    }
+
+    return false;
+};
+
+/**
+ * Shows a postroll if a postroll should be played
+ *
+ * @param {Event} e event that triggered this callback
+ */
+VideoplazaAds.prototype._checkForPostroll = function _checkForPostroll(e) {
+    if (!this.hasShownPostroll) {
+        this._runAds('onContentEnd');
+        this.hasShownPostroll = true;
+        e.ignore = true;
     }
 };
 
+/**
+ * Check if we need to show controls
+ *
+ * Most mobile devices has disabled autoplay, and need to have controls to
+ * allow playback. Actual implementation of this method can be improved.
+ *
+ * @return {Boolean}
+ */
+VideoplazaAds.prototype._needControls = function _needContols() {
+    return navigator.userAgent.match(/iPad|iPod|iPhone|Android/);
+};
 /**
  * Watch the given player, and inject ads when appropriate
  *
@@ -507,41 +565,27 @@ VideoplazaAds.prototype._checkForMidroll = function () {
  * @param {Node} videoElement The video element to watch
  * @return {boolean} False if videoElement is not a video element, true otherwise
  */
-VideoplazaAds.prototype.watchPlayer = function (videoElement) {
+VideoplazaAds.prototype.watchPlayer = function watchPlayer(videoElement) {
     this.log('told to watch player', videoElement);
     this._destroyAdPlayer();
 
     if (videoElement.tagName.toLowerCase() !== 'video') {
-        console.error('not watching player - not a video element');
+        this.logError('not watching player - not a video element');
         return false;
     }
 
     this.watchedPlayer = videoElement;
+    this.hasShownPreroll = false;
+    this.hasShownPostroll = false;
 
-    this.shownPreroll = false;
     if (!this.watchedPlayer.paused) {
         this._runAds('onBeforeContent');
-        this.shownPreroll = true;
+        this.hasShownPreroll = true;
     }
 
-    this._listen(videoElement, 'play', function (e) {
-        if (!this.shownPreroll) {
-            this._runAds('onBeforeContent');
-            this.shownPreroll = true;
-            e.ignore = true;
-        }
-    });
-
+    this._listen(videoElement, 'play', this._checkForPreroll);
     this._listen(videoElement, 'timeupdate', this._checkForMidroll);
-
-    this.shownPostroll = false;
-    this._listen(videoElement, 'ended', function (e) {
-        if (!this.shownPostroll) {
-            this._runAds('onContentEnd');
-            this.shownPostroll = true;
-            e.ignore = true;
-        }
-    });
+    this._listen(videoElement, 'ended', this._checkForPostroll);
 
     return true;
 };
