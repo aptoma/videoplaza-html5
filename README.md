@@ -58,3 +58,15 @@ welcome!
 The code presented here is not officially supported by Videoplaza, nor
 by Aptoma AS. That said, it should be working well and should be safe to
 use.
+
+Any issues should be submitted at the [Github issues page](https://github.com/aptoma/videoplaza-html5/issues).
+
+## Participation ##
+
+Any patches should include tests. We use [Buster.js](http://docs.busterjs.org/)
+for testing. To start a server and watch files, simply run `guard` from the
+project root. Tests should be run on at least Chrome and Firefox, and preferably
+any modern browser, including recent versions of iOS and Android.
+
+As we deal with video playback, you also need to manually verify that stuff
+works.
