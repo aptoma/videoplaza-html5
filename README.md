@@ -34,8 +34,8 @@ it must return true to indicate that it has indeed shown the banner.
 
 Midrolls can be set using the setMidrolls([]) method, which takes a list
 of timecodes (in seconds) at which midrolls should be displayed. These
-are absolute, not relative to the start of the video (i.e. *startTime*
-is taken into account).
+are relative to the start of the video (i.e. *startTime* is not taken
+into account).
 
 Also, remember to call setContentMeta before each new video is to be
 displayed to set the correct data to send to the Videoplaza backend.
