@@ -404,6 +404,7 @@ VideoplazaAds.prototype._createAdPlayer = function _createAdPlayer() {
         this._listen(this.adPlayer, 'canplay', this._onAdCanPlay);
         this._listen(this.adPlayer, 'timeupdate', this._onAdTick);
         this._listen(this.adPlayer, 'ended', this._showNextAd);
+        this._listen(this.adPlayer, 'error', this._onAdError);
         this.adPlayer.style.display = 'none';
         this.watchedPlayer.parentNode.insertBefore(this.adPlayer, this.watchedPlayer);
 
@@ -416,6 +417,30 @@ VideoplazaAds.prototype._createAdPlayer = function _createAdPlayer() {
     }
 
     return false;
+};
+
+VideoplazaAds.prototype._onAdError = function _onAdError(e) {
+    if( e.target.error ){
+        switch (e.target.error.code) {
+        case e.target.error.MEDIA_ERR_ABORTED:
+            this.logError('Ad playback aborted.');
+            break;
+        case e.target.error.MEDIA_ERR_NETWORK:
+            this.logError('A network error caused the video download to fail part-way');
+            break;
+        case e.target.error.MEDIA_ERR_DECODE:
+            this.logError('The video playback was aborted due to a corruption problem or because the video used features your browser did not support');
+            break;
+        case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            this.logError('The video could not be loaded, either because the server or network failed or because the format is not supported');
+            break;
+        default:
+            this.logError('An unknown error occurred');
+            break;
+        }
+    }
+
+    this._showNextAd();
 };
 
 /**
