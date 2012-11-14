@@ -18,6 +18,7 @@ buster.testCase('vp5', {
                 type: 'unknown'
             }
         ];
+        this.stub(this.vp, 'log');
     },
 
     'VideoplazaAds': {
@@ -38,6 +39,20 @@ buster.testCase('vp5', {
 
             assert.equals(this.vp.skipHandler.start, onAdStarted);
             assert.equals(this.vp.skipHandler.end, onAdEnded);
+        }
+    },
+
+    'setTakeoverCallbacks': {
+        'should assign takeover callbacks': function () {
+            var onTakeover = function () {
+            };
+            var onRelease = function () {
+            };
+
+            this.vp.setTakeoverCallbacks(onTakeover, onRelease);
+
+            assert.equals(this.vp.takeoverCallbacks.onTakeover, onTakeover);
+            assert.equals(this.vp.takeoverCallbacks.onRelease, onRelease);
         }
     },
 
@@ -112,6 +127,25 @@ buster.testCase('vp5', {
         }
     },
 
+    '_unlisten': {
+        'should remove bound callback to event on element': function () {
+            var element = document.createElement('div');
+            var event = document.createEvent('Event');
+            event.initEvent('click', true, true);
+
+            var obj = {};
+            obj.callback = function () {
+            };
+            this.spy(obj, 'callback');
+
+            this.vp._listen(element, 'click', obj.callback);
+            this.vp._unlisten(element, 'click', obj.callback);
+            element.dispatchEvent(event);
+
+            refute.calledOnce(obj.callback);
+        }
+    },
+
     'setContentMeta': {
         'should set meta': function () {
             var meta = {category: 'test'};
@@ -145,14 +179,8 @@ buster.testCase('vp5', {
             ];
 
             this.stub(this.vp, '_showNextAd');
-            this.spy(this.vp, 'log');
-            this.stub(console, 'log');
 
-            this.vp._onAds(this.ads);
-        },
-        'should log when receiving ads': function () {
-            assert.calledOnce(this.vp.log);
-            assert.calledOnce(console.log);
+            this.vp._onAdsReceived(this.ads);
         },
         'should set this.ads to received ads': function () {
             assert.same(this.vp.ads, this.ads);
@@ -175,12 +203,11 @@ buster.testCase('vp5', {
 
             this.spy(this, 'skipHandlerEnd');
             this.vp.setSkipHandler(this.skipHandlerStart, this.skipHandlerEnd);
-            this.stub(this.vp, 'log');
-            this.stub(this.vp, '_resumeWatchedPlayer');
+            this.stub(this.vp, '_resumeOriginalVideo');
             this.stub(this.vp, '_displayAdCreatives');
             this.spy(this.vp.tracker, 'track');
             this.spy(this.vp, '_showNextAd');
-            this.stub(this.vp, '_onError');
+            this.stub(this.vp, '_onVideoplazaError');
         },
         'should increase ad index by 1': function () {
             this.vp._showNextAd();
@@ -189,11 +216,6 @@ buster.testCase('vp5', {
         'should when ads are disabled': {
             setUp: function () {
                 this.vp.setAdsEnabled(false);
-            },
-            'log message': function () {
-                this.vp._showNextAd();
-                assert.calledOnce(this.vp.log);
-                assert.calledWith(this.vp.log, 'no more ads');
             },
             'call skiphandler.end if defined': function () {
                 this.vp._showNextAd();
@@ -204,9 +226,9 @@ buster.testCase('vp5', {
                 this.vp._showNextAd();
                 refute.called(this.skipHandlerEnd);
             },
-            'call _resumeWatchedPlayer once ': function () {
+            'resume original video when done': function () {
                 this.vp._showNextAd();
-                assert.calledOnce(this.vp._resumeWatchedPlayer);
+                assert.calledOnce(this.vp._resumeOriginalVideo);
             },
             'return false': function () {
                 var result = this.vp._showNextAd();
@@ -217,11 +239,6 @@ buster.testCase('vp5', {
             setUp: function () {
                 this.vp.ads = [];
             },
-            'log message': function () {
-                this.vp._showNextAd();
-                assert.calledOnce(this.vp.log);
-                assert.calledWith(this.vp.log, 'no more ads');
-            },
             'call skiphandler.end if defined': function () {
                 this.vp._showNextAd();
                 assert.calledOnce(this.skipHandlerEnd);
@@ -231,19 +248,14 @@ buster.testCase('vp5', {
                 this.vp._showNextAd();
                 refute.called(this.skipHandlerEnd);
             },
-            'call _resumeWatchedPlayer once ': function () {
+            'resume original video when done': function () {
                 this.vp._showNextAd();
-                assert.calledOnce(this.vp._resumeWatchedPlayer);
+                assert.calledOnce(this.vp._resumeOriginalVideo);
             },
             'return false': function () {
                 var result = this.vp._showNextAd();
                 refute(result);
             }
-        },
-        'should log message when called': function () {
-            this.vp._showNextAd();
-            assert.calledTwice(this.vp.log);
-            assert.calledWith(this.vp.log, 'showing ad #0');
         },
         'should update this.ad to next ad': function () {
             this.vp._showNextAd();
@@ -272,33 +284,27 @@ buster.testCase('vp5', {
             var result = this.vp._showNextAd();
             assert.calledOnce(this.vp.log);
             assert.calledWith(this.vp.log, 'showing ad #2');
-            assert.calledOnce(this.vp._onError);
+            assert.calledOnce(this.vp._onVideoplazaError);
             refute(result);
         }
     },
 
-    '_showCompanion': {
+    '_showCompanionBanner': {
         setUp: function () {
-            this.stub(this.vp, 'log');
             this.companion = {};
             this.companionHandler = function () {
                 return true;
             };
         },
-        'should log being called': function () {
-            this.vp._showCompanion(this.companion);
-            assert.calledOnce(this.vp.log);
-            assert.calledWith(this.vp.log, 'show companion banner', this.companion);
-        },
         'should return false if no companionHandler has been set': function () {
             this.vp.setCompanionHandler(null);
-            var result = this.vp._showCompanion(this.companion);
+            var result = this.vp._showCompanionBanner(this.companion);
             refute(result);
         },
         'should call companionHandler once': function () {
             this.stub(this, 'companionHandler');
             this.vp.setCompanionHandler(this.companionHandler);
-            this.vp._showCompanion(this.companion);
+            this.vp._showCompanionBanner(this.companion);
 
             assert.calledOnce(this.companionHandler);
         },
@@ -308,7 +314,7 @@ buster.testCase('vp5', {
 
             this.vp.setCompanionHandler(this.companionHandler);
 
-            var result = this.vp._showCompanion(this.companion);
+            var result = this.vp._showCompanionBanner(this.companion);
             assert.calledOnce(this.companionHandler);
             assert.calledOnce(this.vp.tracker.track);
             assert(result);
@@ -319,7 +325,7 @@ buster.testCase('vp5', {
             };
             this.spy(this, 'handler');
             this.vp.setCompanionHandler(this.handler);
-            var result = this.vp._showCompanion(this.companion);
+            var result = this.vp._showCompanionBanner(this.companion);
             assert.calledOnce(this.handler);
             refute(result);
         }
@@ -344,21 +350,15 @@ buster.testCase('vp5', {
                     type: 'linear'
                 }
             ];
-            this.stub(this.vp, 'log');
             this.stub(this.vp, '_showNextAd');
             this.stub(this.vp, 'logError');
             this.stub(this.vp, '_playVideoAd');
-            this.stub(this.vp, '_showCompanion').returns(true);
+            this.stub(this.vp, '_showCompanionBanner').returns(true);
             this.companion = {};
             this.companionHandler = function () {
                 return true;
             };
 
-        },
-        'should log being called': function () {
-            this.vp._displayAdCreatives([]);
-            assert.calledOnce(this.vp.log);
-            assert.calledWith(this.vp.log, 'found 0 creatives for ad');
         },
         'should pick last video in list of creatives': function () {
             this.vp._displayAdCreatives(this.creatives);
@@ -366,11 +366,11 @@ buster.testCase('vp5', {
         },
         'should call _showCompanion for any companion banners in the list of creatives': function () {
             this.vp._displayAdCreatives(this.creatives);
-            assert.calledOnce(this.vp._showCompanion);
-            assert.calledWith(this.vp._showCompanion, this.creatives[1]);
+            assert.calledOnce(this.vp._showCompanionBanner);
+            assert.calledWith(this.vp._showCompanionBanner, this.creatives[1]);
         },
-        'should log error if any companion banners fails': function () {
-            this.vp._showCompanion.returns(false);
+        'should log error if any companion banners fail': function () {
+            this.vp._showCompanionBanner.returns(false);
             this.vp._displayAdCreatives(this.creatives);
 
             assert.calledOnce(this.vp.logError);
@@ -391,27 +391,27 @@ buster.testCase('vp5', {
 
     '_onError should log error and resume playback': function () {
         this.stub(this.vp, 'logError');
-        this.stub(this.vp, '_resumeWatchedPlayer');
+        this.stub(this.vp, '_resumeOriginalVideo');
 
-        this.vp._onError('message');
+        this.vp._onVideoplazaError('message');
 
         assert.calledOnce(this.vp.logError);
         assert.calledWith(this.vp.logError, "Videoplaza error: message");
-        assert.calledOnce(this.vp._resumeWatchedPlayer);
+        assert.calledOnce(this.vp._resumeOriginalVideo);
     },
+
     '_runAds': {
         setUp: function () {
-            this.stub(this.vp, 'log');
             this.stub(this.vp, 'logError');
             this.vp.watchPlayer(document.createElement('video'));
-            this.stub(this.vp.watchedPlayer, 'pause');
+            this.stub(this.vp.player, 'pause');
             this.stub(this.vp.adCall, 'requestAds');
-            this.stub(this.vp, '_onAds');
-            this.stub(this.vp, '_onError');
+            this.stub(this.vp, '_onAdsReceived');
+            this.stub(this.vp, '_onVideoplazaError');
         },
         'should pause watched player': function () {
             this.vp._runAds('onBeforeContent', true);
-            assert.calledOnce(this.vp.watchedPlayer.pause);
+            assert.calledOnce(this.vp.player.pause);
         },
         'should update request settings with insertion point': function () {
             this.vp._runAds('onBeforeContent', true);
@@ -431,7 +431,7 @@ buster.testCase('vp5', {
             this.vp._runAds('onBeforeContent', true);
 
             assert.calledOnce(this.vp.adCall.requestAds);
-            assert.calledOnce(this.vp._onAds);
+            assert.calledOnce(this.vp._onAdsReceived);
         },
         'should call requestAds and _oneError if failing': function () {
             this.vp.adCall.requestAds.callsArg(3);
@@ -439,39 +439,12 @@ buster.testCase('vp5', {
             this.vp._runAds('onBeforeContent', true);
 
             assert.calledOnce(this.vp.adCall.requestAds);
-            assert.calledOnce(this.vp._onError);
+            assert.calledOnce(this.vp._onVideoplazaError);
         }
     },
-    '_destroyAdPlayer': {
-        'should only log being called if no ad player is set': function () {
-            this.stub(this.vp, 'log');
 
-            this.vp._destroyAdPlayer();
-
-            assert.calledOnce(this.vp.log);
-            assert.calledWith(this.vp.log, 'told to destroy ad player');
-        },
-        'should log being called, destroy ad player if set, and show watched player': function () {
-            this.stub(this.vp, 'log');
-            var parentNode = document.createElement('div');
-            this.vp.watchedPlayer = document.createElement('video');
-            parentNode.appendChild(this.vp.watchedPlayer);
-            this.vp._createAdPlayer();
-
-            this.vp._destroyAdPlayer();
-            var watchedPlayer = parentNode.firstElementChild;
-
-            assert.calledWith(this.vp.log, 'told to destroy ad player');
-            assert.calledWith(this.vp.log, 'actually destroyed ad player');
-            assert.equals(parentNode.children.length, 1);
-            assert.same(parentNode.children[0], watchedPlayer);
-            assert.equals(watchedPlayer.style.display, 'block');
-            assert.isNull(this.vp.adPlayer);
-        }
-    },
     '_onAdPlay': {
         setUp: function () {
-            this.stub(this.vp, 'log');
             this.stub(this.vp.tracker, 'track');
             this.vp.ad = {};
         },
@@ -517,32 +490,24 @@ buster.testCase('vp5', {
 
     '_onAdClick': {
         setUp: function () {
-            this.event = document.createEvent('Event');
-            this.event.initEvent('click', true, true);
-            this.stub(this.event, 'preventDefault');
-            this.stub(window, 'open');
-            this.stub(this.vp, 'log');
-            this.stub(this.vp.tracker, 'track');
+            this.vp.player = document.createElement('video');
             this.vp.adVideo = {
                 clickThroughUri: 'http://test.com'
             };
-        },
-        'should if ad is not playing': {
-            'should return true and log message': function () {
-                this.vp.adPlaying = false;
-                this.vp._onAdClick(this.event);
-                assert.calledOnce(this.vp.log);
-                assert.calledWith(this.vp.log, 'ad click with no ad playing, fallthrough to start playback.');
-            }
+
+            this.event = document.createEvent('Event');
+            this.event.initEvent('click', true, true);
+            this.stub(this.event, 'preventDefault');
+            this.stub(this.vp.player, 'pause');
+            this.stub(this.vp, '_listen');
+            this.stub(this.vp, '_unlisten');
+            this.stub(window, 'open');
+            this.stub(this.vp.tracker, 'track');
         },
         'should if ad is playing': {
             setUp: function () {
                 this.vp.adPlaying = true;
                 this.vp._onAdClick(this.event);
-            },
-            'log being called': function () {
-                assert.calledOnce(this.vp.log);
-                assert.calledWith(this.vp.log, 'ad click through to http://test.com');
             },
             'track click event': function () {
                 assert.calledOnce(this.vp.tracker.track);
@@ -552,21 +517,30 @@ buster.testCase('vp5', {
                 assert.calledOnce(window.open);
                 assert.calledWith(window.open, this.vp.adVideo.clickThroughUri, '_blank');
             },
+            'pause player, show controls and change click listener on player': function () {
+                assert.calledOnce(this.vp.player.pause);
+                assert(this.vp.player.controls);
+                assert.calledOnce(this.vp._unlisten);
+                assert.calledWith(this.vp._unlisten, this.vp.player, this.vp._clickEvent, this.vp._onAdClick);
+                assert.calledOnce(this.vp._listen);
+                assert.calledWith(this.vp._listen, this.vp.player, this.vp._clickEvent, this.vp._onAdClickToResume);
+            },
             'call preventDefault on event': function () {
                 assert.calledOnce(this.event.preventDefault);
             }
         }
     },
+
     '_onAdTick': {
         setUp: function () {
             this.vp.adVideo = {
                 duration: 10
             };
-            this.vp.adPlayer = {
+            this.vp.player = {
                 currentTime: 0
             };
+            this.vp.adPlaying = true;
 
-            this.stub(this.vp, 'log');
             this.stub(this.vp.tracker, 'track');
         },
         'should log message if ad player is not initialized': function () {
@@ -575,8 +549,8 @@ buster.testCase('vp5', {
             assert.calledOnce(this.vp.log);
             refute(result);
         },
-        'should log message if ad vidoe is not set': function () {
-            this.vp.adPlayer = null;
+        'should log message if ad video is not set': function () {
+            this.vp.player = null;
             var result = this.vp._onAdTick({});
             assert.calledOnce(this.vp.log);
             refute(result);
@@ -590,7 +564,7 @@ buster.testCase('vp5', {
         },
         'should send event when 25% quartile is passed': function () {
             this.vp.unsentQuartiles = [0.25, 0.5, 0.75];
-            this.vp.adPlayer.currentTime = 3;
+            this.vp.player.currentTime = 3;
 
             this.vp._onAdTick();
 
@@ -602,7 +576,7 @@ buster.testCase('vp5', {
         },
         'should send event when 50% quartile is passed': function () {
             this.vp.unsentQuartiles = [0.5, 0.75];
-            this.vp.adPlayer.currentTime = 6;
+            this.vp.player.currentTime = 6;
 
             this.vp._onAdTick();
 
@@ -614,7 +588,7 @@ buster.testCase('vp5', {
         },
         'should send event when 75% quartile is passed': function () {
             this.vp.unsentQuartiles = [0.75];
-            this.vp.adPlayer.currentTime = 10;
+            this.vp.player.currentTime = 10;
 
             this.vp._onAdTick();
 
@@ -625,84 +599,122 @@ buster.testCase('vp5', {
             assert.calledWith(this.vp.tracker.track, this.vp.adVideo, this.vp.trackingEvents.creative.thirdQuartile);
         }
     },
-    '_createAdPlayer': {
+    '_prepareAdPlayback': {
         setUp: function () {
-            this.stub(this.vp, 'log');
-            this.stub(this.vp, '_listen');
+            this.stub(this.vp, '_takeover');
 
-            this.videoWrapper = document.createElement('div');
-            this.videoWrapper.style.width = '400px';
-            this.videoWrapper.style.height = '300px';
-            this.videoPlayer = document.createElement('video');
-            this.videoPlayer.style.width = '100%';
-            this.videoPlayer.style.height = '100%';
-            this.videoWrapper.appendChild(this.videoPlayer);
-            document.body.appendChild(this.videoWrapper);
-            this.vp.watchedPlayer = this.videoPlayer;
+            this.vp.player = {
+                currentSrc: 'http://video-js.zencoder.com/oceans-clip.mp4',
+                currentTime: 5
+            };
         },
-        'should log a message and return false if already created': function () {
-            this.vp.adPlayer = true;
-            var result = this.vp._createAdPlayer();
+        'should save current state of original video and notify takeover': function () {
+            this.vp._prepareAdPlayback();
 
-            assert.calledOnce(this.vp.log);
-            assert.calledWith(this.vp.log, 'told to create ad player');
+            assert.equals(this.vp._playerState.originalSrc, 'http://video-js.zencoder.com/oceans-clip.mp4');
+            assert.equals(this.vp._playerState.timeToResume, 5);
+            assert.calledOnce(this.vp._takeover);
+        },
+        'should return false if ad is already playing': function () {
+            this.vp.adPlaying = true;
+
+            var result = this.vp._prepareAdPlayback();
+
             refute(result);
-        },
-        'should if not already created': {
-            setUp: function () {
-            },
-            'log being created and return true if not already created': function () {
-                var result = this.vp._createAdPlayer();
-                assert.calledTwice(this.vp.log);
-                assert.calledWith(this.vp.log, 'told to create ad player');
-                assert.calledWith(this.vp.log, 'actually created ad player');
-                assert(result);
-            },
-            'create a new player with same dimensions as watched player, with preload and controls pending on user agent': function () {
-                this.vp._createAdPlayer();
-
-                assert.equals(this.vp.adPlayer.clientWidth, 400);
-                assert.equals(this.vp.adPlayer.clientHeight, 300);
-                if (this.vp._needControls()) {
-                    assert(this.vp.adPlayer.controls);
-                } else {
-                    refute(this.vp.adPlayer.controls);
-                }
-                assert.equals(this.vp.adPlayer.preload, 'auto');
-            },
-            'set up event listeners': function () {
-                this.vp._createAdPlayer();
-
-                assert.calledWithExactly(this.vp._listen, this.vp.adPlayer, 'play', this.vp._onAdPlay);
-                assert.calledWithExactly(this.vp._listen, this.vp.adPlayer, 'click', this.vp._onAdClick);
-                assert.calledWithExactly(this.vp._listen, this.vp.adPlayer, 'canplay', this.vp._onAdCanPlay);
-                assert.calledWithExactly(this.vp._listen, this.vp.adPlayer, 'timeupdate', this.vp._onAdTick);
-                assert.calledWithExactly(this.vp._listen, this.vp.adPlayer, 'ended', this.vp._showNextAd);
-            },
-            'insert ad player into dom and hide watched player': function () {
-                this.vp._createAdPlayer();
-
-                assert.equals(this.vp.watchedPlayer.style.display, 'none');
-                assert.equals(this.vp.adPlayer.style.display, 'block');
-                assert.same(this.vp.adPlayer.parentNode, this.videoWrapper);
-                assert.same(this.vp.adPlayer, this.videoWrapper.children[0]);
-                assert.same(this.vp.watchedPlayer, this.videoWrapper.children[1]);
-                refute(this.vp.adPlaying);
-            }
         }
     },
+
+    '_takeover': {
+        setUp: function () {
+            this.stub(this.vp, '_listen');
+            this.stub(this.vp, '_unlisten');
+            this.vp.player = document.createElement('video');
+            this.vp.player.controls = true;
+        },
+        'should remove controls': function () {
+            this.vp._takeover();
+
+            refute(this.vp.player.controls);
+        },
+        'should set up and remove event listeners': function () {
+            this.vp._takeover();
+
+            assert.calledWithExactly(this.vp._listen, this.vp.player, 'play', this.vp._onAdPlay);
+            assert.calledWithExactly(this.vp._listen, this.vp.player, this.vp._clickEvent, this.vp._onAdClick);
+            assert.calledWithExactly(this.vp._listen, this.vp.player, 'canplay', this.vp._onAdCanPlay);
+            assert.calledWithExactly(this.vp._listen, this.vp.player, 'timeupdate', this.vp._onAdTick);
+            assert.calledWithExactly(this.vp._listen, this.vp.player, 'ended', this.vp._showNextAd);
+
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, 'canplay', this.vp._onVideoCanPlay);
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, 'play', this.vp._checkForPreroll);
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, 'timeupdate', this.vp._checkForMidroll);
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, 'ended', this.vp._checkForPostroll);
+        },
+        'should trigger takeover callback if provided': function () {
+            var onTakeover = function () {
+            };
+            var onRelease = function () {
+            };
+            this.vp.setTakeoverCallbacks(onTakeover, onRelease);
+            this.stub(this.vp.takeoverCallbacks, 'onTakeover');
+
+            this.vp._takeover();
+
+            assert.calledOnce(this.vp.takeoverCallbacks.onTakeover);
+        }
+    },
+
+    '_release': {
+        setUp: function () {
+            this.stub(this.vp, '_listen');
+            this.stub(this.vp, '_unlisten');
+            this.vp.player = document.createElement('video');
+        },
+        'should reenable controls': function () {
+            this.vp._release();
+
+            assert(this.vp.player.controls);
+        },
+        'should set up and remove event listeners': function () {
+            this.vp._release();
+
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, 'play', this.vp._onAdPlay);
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, this.vp._clickEvent, this.vp._onAdClick);
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, this.vp._clickEvent, this.vp._onAdClickToResume);
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, 'canplay', this.vp._onAdCanPlay);
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, 'timeupdate', this.vp._onAdTick);
+            assert.calledWithExactly(this.vp._unlisten, this.vp.player, 'ended', this.vp._showNextAd);
+
+            assert.calledWithExactly(this.vp._listen, this.vp.player, 'canplay', this.vp._onVideoCanPlay);
+            assert.calledWithExactly(this.vp._listen, this.vp.player, 'play', this.vp._checkForPreroll);
+            assert.calledWithExactly(this.vp._listen, this.vp.player, 'timeupdate', this.vp._checkForMidroll);
+            assert.calledWithExactly(this.vp._listen, this.vp.player, 'ended', this.vp._checkForPostroll);
+        },
+        'should trigger release callback if provided': function () {
+            var onTakeover = function () {
+            };
+            var onRelease = function () {
+            };
+            this.vp.setTakeoverCallbacks(onTakeover, onRelease);
+            this.stub(this.vp.takeoverCallbacks, 'onRelease');
+
+            this.vp._release();
+
+            assert.calledOnce(this.vp.takeoverCallbacks.onRelease);
+        }
+    },
+
     '_playVideoAd': {
         setUp: function () {
-            this.stub(this.vp, 'log');
-            this.stub(this.vp, '_createAdPlayer');
+            this.stub(this.vp, '_prepareAdPlayback');
             this.vp.adVideo = {
                 duration: 10,
                 mediaFiles: [
                     {uri: 'http://test.com/' }
                 ]
             };
-            this.vp.adPlayer = document.createElement('video');
-            this.stub(this.vp.adPlayer, 'load');
+            this.vp.player = document.createElement('video');
+            this.stub(this.vp.player, 'load');
         },
         'should log being called': function () {
             this.vp._playVideoAd();
@@ -717,7 +729,7 @@ buster.testCase('vp5', {
         },
         'should create ad player': function () {
             this.vp._playVideoAd();
-            assert.calledOnce(this.vp._createAdPlayer);
+            assert.calledOnce(this.vp._prepareAdPlayback);
         },
         'should call start skipHandler if defined': function () {
             var handlers = {startHandler: function () {
@@ -731,54 +743,66 @@ buster.testCase('vp5', {
         },
         'should set src of adPlayer to provided uri': function () {
             this.vp._playVideoAd();
-            assert.equals(this.vp.adPlayer.src, this.vp.adVideo.mediaFiles[0].uri);
+            assert.equals(this.vp.player.src, this.vp.adVideo.mediaFiles[0].uri);
         },
         'should call adPlayer.load': function () {
             this.vp._playVideoAd();
-            assert.calledOnce(this.vp.adPlayer.load);
+            assert.calledOnce(this.vp.player.load);
         }
     },
     '_onAdCanPlay': {
         'should call adPlayer.play': function () {
-            this.vp.adPlayer = document.createElement('video');
-            this.stub(this.vp.adPlayer, 'play');
-            this.vp._onAdCanPlay();
-
-            assert.calledOnce(this.vp.adPlayer.play);
-        }
-    },
-    '_resumeWatchedPlayer': {
-        setUp: function () {
-            this.stub(this.vp, 'log');
-            this.stub(this.vp, '_destroyAdPlayer');
-            this.stub(this.vp, '_triggerVideoEvent');
-            this.vp.watchedPlayer = document.createElement('video');
-            this.stub(this.vp.watchedPlayer, 'play');
-        },
-        'should log being called and destroy adPlayer': function () {
-            this.vp._resumeWatchedPlayer();
-
-            assert.calledOnce(this.vp.log);
-            assert.calledWith(this.vp.log, 'resuming watched player');
-            assert.calledOnce(this.vp._destroyAdPlayer);
-        },
-        'should call play on watched player if paused and not ended': function () {
-            this.vp.watchedPlayer.paused = true;
-            this.vp._resumeWatchedPlayer();
-
-            assert.calledOnce(this.vp.watchedPlayer.play);
-        },
-        'should trigger "ended" video event if video is ended': function () {
-            this.vp.watchedPlayer = {
-                ended: true,
-                paused: true,
+            this.vp.player = {
+                currentTime: 5,
                 play: function () {
                 }
             };
-            this.stub(this.vp.watchedPlayer, 'play');
-            this.vp._resumeWatchedPlayer();
+            this.stub(this.vp.player, 'play');
+            this.vp._onAdCanPlay();
 
-            refute.called(this.vp.watchedPlayer.play);
+            assert.equals(this.vp.player.currentTime, 0);
+            assert.calledOnce(this.vp.player.play);
+        }
+    },
+    '_resumeOriginalVideo': {
+        setUp: function () {
+            this.vp.player = document.createElement('video');
+            this.vp.player.src = 'http://video.mv4/';
+            this.vp._playerState.originalSrc = 'http://video.mv4/';
+
+            this.stub(this.vp, '_release');
+            this.stub(this.vp, '_triggerVideoEvent');
+            this.stub(this.vp.player, 'play');
+            this.stub(this.vp.player, 'load');
+        },
+        'should release takeover': function () {
+            this.vp._resumeOriginalVideo();
+
+            assert.calledOnce(this.vp._release);
+            refute(this.vp.adPlaying);
+        },
+        'should restore original state': function () {
+            this.vp._resumeOriginalVideo();
+
+            assert.equals(this.vp.player.src, this.vp._playerState.originalSrc);
+        },
+        'should call player.load() if currentSrc is different from original src': function () {
+            this.vp.player.src = 'http://ads.mv4/';
+            this.vp._resumeOriginalVideo();
+
+            assert.calledOnce(this.vp.player.load);
+            refute.called(this.vp.player.play);
+        },
+        'should call player.play() if currentSrc is same as original src': function () {
+            this.vp._resumeOriginalVideo();
+
+            assert.calledOnce(this.vp.player.play);
+            refute.called(this.vp.player.load);
+        },
+        'should trigger "ended" video event if video is ended': function () {
+            this.vp._playerState.ended = true;
+            this.vp._resumeOriginalVideo();
+
             assert.calledOnce(this.vp._triggerVideoEvent);
             assert.calledWith(this.vp._triggerVideoEvent, 'ended');
         }
@@ -789,21 +813,20 @@ buster.testCase('vp5', {
             assert.equals('undefined', typeof result);
         },
         'should fire an event of the provided type': function () {
-            this.vp.watchedPlayer = document.createElement('video');
-            this.stub(this.vp.watchedPlayer, 'dispatchEvent');
+            this.vp.player = document.createElement('video');
+            this.stub(this.vp.player, 'dispatchEvent');
             var expectedEvent = document.createEvent('HTMLEvents');
             expectedEvent.initEvent('play', true, true);
 
             this.vp._triggerVideoEvent('play');
 
-            assert.calledOnce(this.vp.watchedPlayer.dispatchEvent);
-            assert.equals(this.vp.watchedPlayer.dispatchEvent.args[0][0].type, expectedEvent.type);
+            assert.calledOnce(this.vp.player.dispatchEvent);
+            assert.equals(this.vp.player.dispatchEvent.args[0][0].type, expectedEvent.type);
         }
     },
     '_checkForMidroll': {
         setUp: function () {
             this.stub(this.vp, '_runAds');
-            this.stub(this.vp, 'log');
         },
         'should do nothing if there are no midrolls defined': function () {
             var result = this.vp._checkForMidroll();
@@ -811,7 +834,7 @@ buster.testCase('vp5', {
             refute.called(this.vp._runAds);
         },
         'should call _runAds if we have a pending midroll': function () {
-            this.vp.watchedPlayer = {
+            this.vp.player = {
                 currentTime: 10
             };
             this.vp.midrolls = [5, 10, 15];
@@ -825,7 +848,7 @@ buster.testCase('vp5', {
             assert.equals(this.vp.lastPlayedMidroll, 1);
         },
         'should return false if there are no pending midrolls': function () {
-            this.vp.watchedPlayer = {
+            this.vp.player = {
                 currentTime: 20
             };
             this.vp.midrolls = [];
@@ -855,7 +878,6 @@ buster.testCase('vp5', {
             assert.called(this.vp._runAds);
             assert.calledWith(this.vp._runAds, 'onBeforeContent');
             assert(this.vp.hasShownPreroll);
-            assert(event.ignore);
         }
     },
     '_checkForPostroll': {
@@ -868,7 +890,6 @@ buster.testCase('vp5', {
             this.vp._checkForPostroll(event);
 
             refute.called(this.vp._runAds);
-            refute(event.ignore);
         },
         'should run ads and update postroll state if not yet played': function () {
             var event = {};
@@ -878,7 +899,6 @@ buster.testCase('vp5', {
             assert.called(this.vp._runAds);
             assert.calledWith(this.vp._runAds, 'onContentEnd');
             assert(this.vp.hasShownPostroll);
-            assert(event.ignore);
         }
     },
     '_needControls': {
@@ -890,11 +910,11 @@ buster.testCase('vp5', {
             }
         }
     },
-    'watchedPlayer': {
+
+    'watchPlayer': {
         setUp: function () {
-            this.stub(this.vp, 'log');
             this.stub(this.vp, 'logError');
-            this.stub(this.vp, '_destroyAdPlayer');
+            this.stub(this.vp, '_release');
             this.stub(this.vp, '_listen');
             this.stub(this.vp, '_runAds');
 
@@ -913,7 +933,7 @@ buster.testCase('vp5', {
         },
         'should assign videoElement to this.watchedPlayer': function () {
             this.vp.watchPlayer(this.videoElement);
-            assert.same(this.vp.watchedPlayer, this.videoElement);
+            assert.same(this.vp.player, this.videoElement);
         },
         'should call _runAds with onBeforeContent (preroll) if player is not paused': function () {
             this.videoElement.play();

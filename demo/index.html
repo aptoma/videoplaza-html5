@@ -27,6 +27,19 @@
     // Optionally disable ads
     //vp.setAdsEnabled(false);
 
+    // We should ignore events sent while Videoplaza ads have taken over the player
+    var actOnEvents = true;
+    vp.setTakeoverCallbacks(
+            function () {
+                console.log('-- front -- ignore events');
+                actOnEvents = false;
+            },
+            function () {
+                console.log('-- front -- listen to events');
+                actOnEvents = true;
+            }
+    );
+
     // Set our companion banner handler
     var companion = function (cb, zone, width, height) {
         console.log('got companion banner for zone ' + zone + ' with dimensions ' + width + 'x' + height);
@@ -73,13 +86,13 @@
     // Example of how to listen for "real" video events
     if (typeof player.addEventListener === 'function') {
         player.addEventListener('play', function (e) {
-            if (!e.ignore) {
-                console.log('got real play event');
+            if (actOnEvents) {
+                console.log('-- front -- got real play event');
             }
         }, false);
         player.addEventListener('ended', function (e) {
-            if (!e.ignore) {
-                console.log('got real ended event');
+            if (actOnEvents) {
+                console.log('-- front -- got real ended event, show video wall?');
             }
         }, false);
     }
