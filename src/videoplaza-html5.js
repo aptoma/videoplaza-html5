@@ -522,8 +522,8 @@ VideoplazaAds.prototype._playVideoAd = function _playVideoAd() {
  * Called when the ad has loaded and can be played
  */
 VideoplazaAds.prototype._onAdCanPlay = function _onAdCanPlay() {
-    this.player.currentTime = 0;
     this.player.play();
+    this.player.currentTime = 0;
 };
 
 /**
