@@ -47,6 +47,8 @@ callbacks: `vp.setTakeoverCallbacks(onTakeover, onRelease);`. If provided,
 these callbacks while be triggered whenever the plugin takes over control of
 the player. Have a look at the demo implementation to see how this can work.
 
+These takeover callbacks will receive the watched player as the only argument.
+
 You need to make sure that any events you register don't interfere with the
 this plugin. If you encounter issues or have a suggestion for improving this
 flow, please let us know. Currently, we listen to the following events, which
