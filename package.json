@@ -8,7 +8,7 @@
     ],
     "name": "videoplaza-html5",
     "description": "Plugin for Videoplaza HTML5 video ad solution",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "homepage": "https://github.com/aptoma/videoplaza-html5",
     "repository": {
         "type": "git",

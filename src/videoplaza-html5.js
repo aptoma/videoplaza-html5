@@ -226,7 +226,7 @@ VideoplazaAds.prototype._takeover = function _takeover() {
     this._unlisten(this.player, 'ended', this._checkForPostroll);
 
     if (typeof this.takeoverCallbacks.onTakeover === 'function') {
-        this.takeoverCallbacks.onTakeover();
+        this.takeoverCallbacks.onTakeover(this.player);
     }
 };
 
@@ -247,7 +247,7 @@ VideoplazaAds.prototype._release = function _release() {
     this._listen(this.player, 'ended', this._checkForPostroll);
 
     if (typeof this.takeoverCallbacks.onRelease === 'function') {
-        this.takeoverCallbacks.onRelease();
+        this.takeoverCallbacks.onRelease(this.player);
     }
 };
 

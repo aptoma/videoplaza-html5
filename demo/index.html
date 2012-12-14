@@ -29,12 +29,12 @@
     // We should ignore events sent while Videoplaza ads have taken over the player
     var actOnEvents = true;
     vp.setTakeoverCallbacks(
-            function () {
-                console.log('-- front -- ignore events');
+            function (player) {
+                console.log('-- front -- ignore events', player);
                 actOnEvents = false;
             },
-            function () {
-                console.log('-- front -- listen to events');
+            function (player) {
+                console.log('-- front -- listen to events', player);
                 actOnEvents = true;
             }
     );
