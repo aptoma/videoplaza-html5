@@ -678,6 +678,7 @@ VideoplazaAds.prototype.watchPlayer = function watchPlayer(videoElement) {
     }
 
     this.player = videoElement;
+    this._playerState.originalSrc = this.player.currentSrc;
     this.hasShownPreroll = false;
     this.hasShownPostroll = false;
 
