@@ -571,7 +571,9 @@ VideoplazaAds.prototype._resumeOriginalVideo = function _resumeOriginalVideo() {
         if (this.player.src === this._playerState.originalSrc) {
             this.player.play();
         } else {
-            this.player.src = this._playerState.originalSrc;
+            if (this._playerState.originalSrc) {
+                this.player.src = this._playerState.originalSrc;
+            }
             this.player.load();
         }
     }
@@ -678,7 +680,6 @@ VideoplazaAds.prototype.watchPlayer = function watchPlayer(videoElement) {
     }
 
     this.player = videoElement;
-    this._playerState.originalSrc = this.player.currentSrc;
     this.hasShownPreroll = false;
     this.hasShownPostroll = false;
 
