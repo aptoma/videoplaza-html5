@@ -383,6 +383,7 @@ VideoplazaAds.prototype._onVideoplazaError = function _onVideoplazaError(message
  */
 VideoplazaAds.prototype._runAds = function _runAds(insertionPoint, includePosition) {
     this.player.pause();
+    this._prepareAdPlayback();
     this.requestSettings.insertionPointType = insertionPoint;
 
     if (includePosition) {
@@ -508,7 +509,6 @@ VideoplazaAds.prototype._prepareAdPlayback = function _prepareAdPlayback() {
 VideoplazaAds.prototype._playVideoAd = function _playVideoAd() {
     this.log('playing ad', this.adVideo);
     this.unsentQuartiles = [0.25, 0.5, 0.75];
-    this._prepareAdPlayback();
 
     if (typeof this.skipHandler.start === 'function') {
         this.skipHandler.start.call(this, this.adVideo.duration);
@@ -568,12 +568,10 @@ VideoplazaAds.prototype._onVideoCanPlay = function _onVideoCanPlay() {
 VideoplazaAds.prototype._resumeOriginalVideo = function _resumeOriginalVideo() {
     this.log('resuming watched player', this._playerState);
     if (this.player && !this._playerState.ended) {
-        if (this.player.src === this._playerState.originalSrc) {
+        if (this.player.src === this._playerState.originalSrc || !this._playerState.originalSrc) {
             this.player.play();
         } else {
-            if (this._playerState.originalSrc) {
-                this.player.src = this._playerState.originalSrc;
-            }
+            this.player.src = this._playerState.originalSrc;
             this.player.load();
         }
     }
