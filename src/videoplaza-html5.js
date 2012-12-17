@@ -579,6 +579,7 @@ VideoplazaAds.prototype._resumeOriginalVideo = function _resumeOriginalVideo() {
     this._release();
 
     if (this._playerState.ended) {
+        this.player.autoplay = null;
         if (this.player.src !== this._playerState.originalSrc) {
             this.player.src = this._playerState.originalSrc;
         }
