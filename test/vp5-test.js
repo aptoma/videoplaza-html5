@@ -727,10 +727,6 @@ buster.testCase('vp5', {
 
             assert.equals(this.vp.unsentQuartiles.length, 3);
         },
-        'should create ad player': function () {
-            this.vp._playVideoAd();
-            assert.calledOnce(this.vp._prepareAdPlayback);
-        },
         'should call start skipHandler if defined': function () {
             var handlers = {startHandler: function () {
             }};

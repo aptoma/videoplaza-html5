@@ -181,6 +181,7 @@ VideoplazaAds.prototype._bindContextForCallbacks = function _bindContextForCallb
     this._onAdClickToResume = this._onAdClickToResume.bind(this);
     this._onAdTick = this._onAdTick.bind(this);
     this._showNextAd = this._showNextAd.bind(this);
+    this._onAdError = this._onAdError.bind(this);
     this._checkForPreroll = this._checkForPreroll.bind(this);
     this._checkForMidroll = this._checkForMidroll.bind(this);
     this._checkForPostroll = this._checkForPostroll.bind(this);
@@ -219,6 +220,7 @@ VideoplazaAds.prototype._takeover = function _takeover() {
     this._listen(this.player, 'canplay', this._onAdCanPlay);
     this._listen(this.player, 'timeupdate', this._onAdTick);
     this._listen(this.player, 'ended', this._showNextAd);
+    this._listen(this.player, 'error', this._onAdError);
 
     this._unlisten(this.player, 'canplay', this._onVideoCanPlay);
     this._unlisten(this.player, 'play', this._checkForPreroll);
@@ -501,6 +503,30 @@ VideoplazaAds.prototype._prepareAdPlayback = function _prepareAdPlayback() {
     }
 
     return false;
+};
+
+VideoplazaAds.prototype._onAdError = function _onAdError(e) {
+    if( e.target.error ){
+        switch (e.target.error.code) {
+            case e.target.error.MEDIA_ERR_ABORTED:
+                this.logError('Ad playback aborted.');
+                break;
+            case e.target.error.MEDIA_ERR_NETWORK:
+                this.logError('A network error caused the video download to fail part-way');
+                break;
+            case e.target.error.MEDIA_ERR_DECODE:
+                this.logError('The video playback was aborted due to a corruption problem or because the video used features your browser did not support');
+                break;
+            case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                this.logError('The video could not be loaded, either because the server or network failed or because the format is not supported');
+                break;
+            default:
+                this.logError('An unknown error occurred');
+                break;
+        }
+    }
+
+    this._showNextAd();
 };
 
 /**
