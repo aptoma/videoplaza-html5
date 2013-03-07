@@ -463,7 +463,7 @@ VideoplazaAds.prototype._onAdTick = function _onAdTick() {
                 this.log('logged third quartile');
                 this.tracker.track(this.adVideo, this.trackingEvents.creative.thirdQuartile);
                 break;
-            case .99:
+            case 0.99:
                 this.log('logged last quartile');
                 this.tracker.track(this.adVideo, this.trackingEvents.creative.complete);
                 break;
@@ -505,7 +505,7 @@ VideoplazaAds.prototype._prepareAdPlayback = function _prepareAdPlayback() {
 };
 
 VideoplazaAds.prototype._onAdError = function _onAdError(e) {
-    if( e.target.error ){
+    if (e.target.error) {
         switch (e.target.error.code) {
             case e.target.error.MEDIA_ERR_ABORTED:
                 this.logError('Ad playback aborted.');
@@ -533,7 +533,7 @@ VideoplazaAds.prototype._onAdError = function _onAdError(e) {
  */
 VideoplazaAds.prototype._playVideoAd = function _playVideoAd() {
     this.log('playing ad', this.adVideo);
-    this.unsentQuartiles = [0.25, 0.5, 0.75,.99];
+    this.unsentQuartiles = [0.25, 0.5, 0.75, 0.99];
 
     if (typeof this.skipHandler.start === 'function') {
         this.skipHandler.start.call(this, this.adVideo.duration);
