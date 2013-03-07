@@ -394,13 +394,8 @@ VideoplazaAds.prototype._runAds = function _runAds(insertionPoint, includePositi
         this.requestSettings.playbackPosition = null;
     }
 
-    var _this = this;
-    var onSuccess = function onAdRequestSuccess(message) {
-        _this._onAdsReceived.call(_this, message);
-    };
-    var onFail = function onAdRequestFail(message) {
-        _this._onVideoplazaError.call(_this, message);
-    };
+    var onSuccess = this._onAdsReceived.bind(this);
+    var onFail = this._onVideoplazaError.bind(this);
     this.adCall.requestAds(this.contentMeta, this.requestSettings, onSuccess, onFail);
 };
 
