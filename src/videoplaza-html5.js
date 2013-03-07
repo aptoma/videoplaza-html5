@@ -463,6 +463,10 @@ VideoplazaAds.prototype._onAdTick = function _onAdTick() {
                 this.log('logged third quartile');
                 this.tracker.track(this.adVideo, this.trackingEvents.creative.thirdQuartile);
                 break;
+            case .99:
+                this.log('logged last quartile');
+                this.tracker.track(this.adVideo, this.trackingEvents.creative.complete);
+                break;
         }
     }
 
@@ -529,7 +533,7 @@ VideoplazaAds.prototype._onAdError = function _onAdError(e) {
  */
 VideoplazaAds.prototype._playVideoAd = function _playVideoAd() {
     this.log('playing ad', this.adVideo);
-    this.unsentQuartiles = [0.25, 0.5, 0.75];
+    this.unsentQuartiles = [0.25, 0.5, 0.75,.99];
 
     if (typeof this.skipHandler.start === 'function') {
         this.skipHandler.start.call(this, this.adVideo.duration);
@@ -673,8 +677,8 @@ VideoplazaAds.prototype._checkForMidroll = function _checkForMidroll() {
  */
 VideoplazaAds.prototype._checkForPostroll = function _checkForPostroll() {
     if (!this.hasShownPostroll) {
-        this._runAds('onContentEnd');
         this.hasShownPostroll = true;
+        this._runAds('onContentEnd');
     }
 };
 
