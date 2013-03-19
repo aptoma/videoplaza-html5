@@ -213,6 +213,11 @@ buster.testCase('vp5', {
             this.vp._showNextAd();
             assert.equals(this.vp.adIndex, 0);
         },
+        'should set adPlaying to false': function () {
+            this.vp.adPlaying = true;
+            this.vp._showNextAd();
+            refute(this.vp.adPlaying);
+        },
         'should when ads are disabled': {
             setUp: function () {
                 this.vp.setAdsEnabled(false);
@@ -725,7 +730,7 @@ buster.testCase('vp5', {
         'should reset unsent quartiles': function () {
             this.vp._playVideoAd();
 
-            assert.equals(this.vp.unsentQuartiles.length, 3);
+            assert.equals(this.vp.unsentQuartiles.length, 4);
         },
         'should call start skipHandler if defined': function () {
             var handlers = {startHandler: function () {

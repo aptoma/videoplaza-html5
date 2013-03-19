@@ -271,6 +271,7 @@ VideoplazaAds.prototype._onAdsReceived = function _onAdsReceived(ads) {
  * @return {boolean} Whether another ad was played or not
  */
 VideoplazaAds.prototype._showNextAd = function _showNextAd() {
+    this.adPlaying = false;
     this.adIndex++;
     if (!this.adsEnabled || this.adIndex >= this.ads.length) {
         this.log('no more ads');
