@@ -35,6 +35,7 @@ function VideoplazaAds(vpHost, debug) {
         onRelease: null
     };
     this._clickEvent = navigator.userAgent.match(/iPad/i) ? 'touchstart' : 'click';
+    this._isAppleDevice = navigator.userAgent.match(/iPad|iPod|iPhone/i);
 
     this._bindContextForCallbacks();
     this.adCall = new videoplaza.core.AdCallModule(vpHost);
@@ -564,6 +565,12 @@ VideoplazaAds.prototype._onAdClickToResume = function _onAdClickToResume() {
  * Called when the video has loaded and can be played
  */
 VideoplazaAds.prototype._onVideoCanPlay = function _onVideoCanPlay() {
+    if (this._playerState.ended && this._isAppleDevice) {
+        // Apple devices will always load video after setting src. Need to pause.
+        this.player.pause();
+        return;
+    }
+
     if (this._playerState.timeToResume === 0 || this._playerState.timeToResume === null) {
         this.player.play();
         return;
@@ -605,7 +612,7 @@ VideoplazaAds.prototype._resumeOriginalVideo = function _resumeOriginalVideo() {
     this._release();
 
     if (this._playerState.ended) {
-        this.player.autoplay = null;
+        this.player.autoplay = false;
         if (this.player.src !== this._playerState.originalSrc) {
             this.player.src = this._playerState.originalSrc;
         }
