@@ -36,6 +36,7 @@ function VideoplazaAds(vpHost, debug) {
     };
     this._clickEvent = navigator.userAgent.match(/iPad/i) ? 'touchstart' : 'click';
     this._isAppleDevice = navigator.userAgent.match(/iPad|iPod|iPhone/i);
+    this._isAndroidDevice = navigator.userAgent.match(/Android/i);
 
     this._bindContextForCallbacks();
     this.adCall = new videoplaza.core.AdCallModule(vpHost);
@@ -543,6 +544,9 @@ VideoplazaAds.prototype._playVideoAd = function _playVideoAd() {
 
     this.player.setAttribute('src', this.adVideo.mediaFiles[0].uri);
     this.player.load();
+    if (this._isAndroidDevice){
+	this._onAdCanPlay();
+    }
 };
 
 /**
@@ -565,8 +569,8 @@ VideoplazaAds.prototype._onAdClickToResume = function _onAdClickToResume() {
  * Called when the video has loaded and can be played
  */
 VideoplazaAds.prototype._onVideoCanPlay = function _onVideoCanPlay() {
-    if (this._playerState.ended && this._isAppleDevice) {
-        // Apple devices will always load video after setting src. Need to pause.
+    if (this._playerState.ended && (this._isAppleDevice || this._isAndroidDevice)) {
+        // Apple and Android devices will always load video after setting src. Need to pause.
         this.player.pause();
         return;
     }
@@ -606,6 +610,11 @@ VideoplazaAds.prototype._resumeOriginalVideo = function _resumeOriginalVideo() {
         } else {
             this.player.src = this._playerState.originalSrc;
             this.player.load();
+
+            // Android doesn't respond to canplay event
+            if (this._isAndroidDevice) {
+                this.player.play();
+            }
         }
     }
     this.adPlaying = false;
