@@ -1,4 +1,4 @@
-/*global videoplaza */
+/*global videoplaza: true, console: true */
 
 /**
  * Create a new VideoplazaAds integration
@@ -42,12 +42,13 @@ function VideoplazaAds(vpHost, debug) {
 }
 
 VideoplazaAds.prototype._initVideoplaza = function _initVideoplaza() {
-    if (typeof this.adCall === 'undefined') {
-        this.adCall = new videoplaza.core.AdCallModule(this.vpHost);
-        this.tracker = new videoplaza.core.Tracker();
-        this.trackingEvents = videoplaza.core.Tracker.trackingEvents;
+    if (typeof this.adCall !== 'undefined') {
+        return;
     }
-}
+    this.adCall = new videoplaza.core.AdCallModule(this.vpHost);
+    this.tracker = new videoplaza.core.Tracker();
+    this.trackingEvents = videoplaza.core.Tracker.trackingEvents;   
+};
 
 VideoplazaAds.prototype.log = function log() {
     if (this.debug && console.log && console.log.apply) {
@@ -727,7 +728,7 @@ VideoplazaAds.prototype.watchPlayer = function watchPlayer(videoElement) {
         return false;
     }
 
-    if (typeof videoplaza === 'undefined') {
+    if (!(typeof videoplaza === 'object' && videoplaza)) {
         return false;
     }
     this._initVideoplaza();
