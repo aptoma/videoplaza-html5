@@ -39,9 +39,14 @@ function VideoplazaAds(vpHost, debug) {
     this._isAndroidDevice = navigator.userAgent.match(/Android/i);
 
     this._bindContextForCallbacks();
-    this.adCall = new videoplaza.core.AdCallModule(vpHost);
-    this.tracker = new videoplaza.core.Tracker();
-    this.trackingEvents = videoplaza.core.Tracker.trackingEvents;
+}
+
+VideoplazaAds.prototype._initVideoplaza = function _initVideoplaza() {
+    if (typeof this.adCall === 'undefined') {
+        this.adCall = new videoplaza.core.AdCallModule(this.vpHost);
+        this.tracker = new videoplaza.core.Tracker();
+        this.trackingEvents = videoplaza.core.Tracker.trackingEvents;
+    }
 }
 
 VideoplazaAds.prototype.log = function log() {
@@ -721,6 +726,11 @@ VideoplazaAds.prototype.watchPlayer = function watchPlayer(videoElement) {
         this.logError('not watching player - not a video element');
         return false;
     }
+
+    if (typeof videoplaza === 'undefined') {
+        return false;
+    }
+    this._initVideoplaza();
 
     this.player = videoElement;
     this.hasShownPreroll = false;
