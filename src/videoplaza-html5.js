@@ -382,6 +382,11 @@ VideoplazaAds.prototype._displayAdCreatives = function _displayAdCreatives(creat
  */
 VideoplazaAds.prototype._onVideoplazaError = function _onVideoplazaError(message) {
     this.logError('Videoplaza error: ' + message);
+
+    if (this._isAndroidDevice && this.adPlaying && message === "requestTimeout") {
+        return;
+    }
+
     this._resumeOriginalVideo();
 };
 
