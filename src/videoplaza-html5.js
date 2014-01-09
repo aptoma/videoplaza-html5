@@ -454,6 +454,10 @@ VideoplazaAds.prototype._onAdTick = function _onAdTick() {
         return false;
     }
     var percent = this.player.currentTime / this.adVideo.duration;
+    if (this.unsentQuartiles.length && this.unsentQuartiles[0] === 0.99) {
+        var currentTime = this.player.currentTime;
+        percent = (currentTime + 1) / this.adVideo.duration;
+    }
     if (this.unsentQuartiles.length && percent > this.unsentQuartiles[0]) {
         var q = this.unsentQuartiles.shift();
         switch (q) {
